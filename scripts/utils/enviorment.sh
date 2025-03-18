@@ -1,0 +1,327 @@
+#!/bin/bash
+
+# 檢查 $1 的環境在 enviorments 底下是否存在，存在則回傳 true，不存在則回傳 false
+is_env_exist() {
+    if [[ -n $1 && -d ${ENVIORMENTS_PATH}/${1} ]]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+is_env_running() {
+    RUNNING_STATUS=$(docker ps --format "{{.Names}}\t{{.Status}}\t{{.Ports}}\t{{.ID}} " --filter name=${1})
+    if [[ -z "${RUNNING_STATUS}" ]]; then
+        echo "false"
+    else
+        echo "true"
+    fi
+}
+
+has_any_env() {
+    if [[ -z $(ls -1 ${ENVIORMENTS_PATH}) ]]; then
+        echo "false"
+    else
+        echo "true"
+    fi
+}
+
+exit_if_env_not_exist() {
+    if [[ -z $1 || $(is_env_exist $1) == "false" ]]; then
+        echo "環境 ${1} 不存在"
+        exit 1
+    fi
+}
+
+load_enviorment_env() {
+    source ${ENVIORMENTS_PATH}/${1:-${CUR_ENV}}/.env
+    export KUBECONFIG=${ENVIORMENTS_PATH}/${1:-${CUR_ENV}}/${KUBE_CONFIG_DIR}/config
+}
+
+# 如果有 $1 則設定 CUR_ENV 為 $1，否則將 enviorments 底下第一個資料夾設定為 CUR_ENV
+set_default_env() {
+    # 如果 $1 沒有帶入參數
+    if [[ -z "$1" ]]; then
+        # 如果有環境存在 則設定 CUR_ENV 為 enviorments 底下第一個資料夾
+        if [[ $(has_any_env) == "true" ]]; then
+            export CUR_ENV=$(basename $(ls -d ${ENVIORMENTS_PATH}/*/ | head -n 1))
+            echo "CUR_ENV=${CUR_ENV}" > ${KDE_PATH}/current.env
+            echo "當前 k8s 環境已變更為: ${CUR_ENV}"
+        # 如果沒有任何環境存在，則刪除 current.env
+        else
+            rm -f ${KDE_PATH}/current.env
+            echo "目前沒有 k8s 環境"
+        fi
+    # 如果 $1 有帶入參數
+    else
+        # 如果 $1 環境不存在，則退出
+        exit_if_env_not_exist $1
+        export CUR_ENV=$1
+        echo "CUR_ENV=${CUR_ENV}" > ${KDE_PATH}/current.env
+        echo "當前 k8s 環境已變更為: ${CUR_ENV}"
+    fi
+    
+}
+
+stop_env() {
+    # 如果 enviorments 底下不存在 $1 環境，則退出
+    exit_if_env_not_exist $1
+    load_enviorment_env $1
+    # 如果環境正在運行，則停止
+    if [[ $(is_env_running ${ENV_NAME}) == "true" ]]; then
+        echo "環境 ${ENV_NAME} 正在運行"
+        if [[ "$2" == "-f" || "$2" == "--force" ]]; then
+            # 強制刪除 k8s 容器
+            echo "強制刪除 k8s 容器 ${K8S_CONTAINER_NAME}"
+            docker rm -f ${K8S_CONTAINER_NAME}
+        else
+            # 停止 k8s 容器
+            echo "停止 k8s 容器 ${K8S_CONTAINER_NAME}"
+            docker stop ${K8S_CONTAINER_NAME}
+            # 刪除 k8s 容器
+            echo "刪除 k8s 容器 ${K8S_CONTAINER_NAME}"
+            docker rm ${K8S_CONTAINER_NAME}
+        fi
+    else
+        echo "環境 ${ENV_NAME} 未運行"
+    fi
+}
+
+remove_env() {
+    export ENV_NAME=${1}
+    
+    # 強制刪除 k8s 容器
+    stop_env ${ENV_NAME} -f
+
+    sudo rm -rf ${ENVIORMENTS_PATH}/${ENV_NAME}
+    echo "環境 ${ENV_NAME} 已刪除"
+    set_default_env
+    exit 0
+}
+
+init_env() {
+    # 設定環境名稱 & 建立環境目錄
+    export ENV_NAME=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+    export ENV_PATH=${ENVIORMENTS_PATH}/${ENV_NAME}
+    export ENV_FILE_PATH=${ENV_PATH}/.env
+    if [[ -d ${ENV_PATH} ]]; then
+        echo "環境 ${ENV_NAME} 相關設定已存在 (${ENV_PATH})"
+    else
+        echo "環境 ${ENV_NAME} 尚未存在，開始初始化環境..."
+        mkdir -p ${ENV_PATH}
+        echo "ENV_NAME=${ENV_NAME}" >> ${ENV_PATH}/.env
+        echo "ENV_TYPE=$2" >> ${ENV_PATH}/.env
+        echo "CUR_ENV=${ENV_NAME}" > ${KDE_PATH}/current.env
+
+        # 設定環境變數檔案路徑
+        touch ${ENV_FILE_PATH}
+
+        # 設定 K8S container 名稱
+        K8S_CONTAINER_NAME=${ENV_NAME}-control-plane
+        echo "K8S_CONTAINER_NAME=${K8S_CONTAINER_NAME}" >> ${ENV_FILE_PATH}
+
+        # 設定 DOCKER_NETWORK
+        DOCKER_NETWORK="${ENV_NAME}"
+        echo "DOCKER_NETWORK=${DOCKER_NETWORK}" >> ${ENV_FILE_PATH}
+
+        # 輸入 K8S_API_SERVER_PORT
+        read -p "請輸入 K8S api server port (預設: 6443): " K8S_API_SERVER_PORT
+        export K8S_API_SERVER_PORT=${K8S_API_SERVER_PORT:-6443}
+
+        # 輸入 K8S_INGRESS_NGINX_PORT
+        read -p "請輸入 K8S ingress nginx port (預設: 8088): " K8S_INGRESS_NGINX_PORT
+        export K8S_INGRESS_NGINX_PORT=${K8S_INGRESS_NGINX_PORT:-8088}
+
+        # 設定 STORAGE_CLASS
+        STORAGE_CLASS=local-path
+        echo "STORAGE_CLASS=${STORAGE_CLASS}" >> ${ENV_FILE_PATH}
+
+        # 設定 VOLUME_DIR
+        mkdir -p ${ENV_PATH}/${VOLUMES_DIR}
+
+        # 設定 KUBE_CONFIG_DIR
+        mkdir -p ${ENV_PATH}/${KUBE_CONFIG_DIR}
+        export KUBECONFIG=${ENV_PATH}/${KUBE_CONFIG_DIR}/config
+
+        echo "環境 ${ENV_NAME} 初始化完畢"
+    fi
+
+    source ${ENV_FILE_PATH}
+}
+
+exec_port_forward() {
+    NAMESPACE=$1
+    RESOURCE_TYPE=$2
+    RESOURCE_NAME=$3
+    TARGET_PORT=$4
+    LOCAL_PORT=$5
+
+    docker run --rm -it \
+    --net ${DOCKER_NETWORK} \
+    -v ${KUBECONFIG}:/root/.kube/config \
+    -p ${LOCAL_PORT}:${LOCAL_PORT} \
+    r82wei/deploy-env:1.0.0 \
+    bash -c "kubectl -n ${NAMESPACE} port-forward --address 0.0.0.0 ${RESOURCE_TYPE}/${RESOURCE_NAME} ${LOCAL_PORT}:${TARGET_PORT}"
+}
+
+is_port_valid() {
+    if [[ $1 -ge 1 && $1 -le 65535 ]]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+# 在 deploy-env 容器中執行命令，並且 echo 結果，適合不需掛載 volume、不需設定 Port 的命令
+exec_in_deploy_env() {
+    output=$(docker run --rm -i \
+    --net ${DOCKER_NETWORK} \
+    -v ${KUBECONFIG}:/root/.kube/config \
+    r82wei/deploy-env:1.0.0 \
+    bash -c "$1")
+
+    echo "${output}"
+}
+
+# 在 deploy-env 容器中執行命令，並且把 KDE 的資料夾掛載進去 (使用 docker 的交互式模式)
+exec_bash_in_deploy_env_with_kde() {
+    docker run --rm -it \
+    --net ${DOCKER_NETWORK} \
+    --workdir ${KDE_PATH} \
+    -v ${KUBECONFIG}:/root/.kube/config \
+    -v ${KDE_PATH}:${KDE_PATH} \
+    r82wei/deploy-env:1.0.0 \
+    bash
+}
+
+# 在 deploy-env 容器中執行命令，並且把 KDE 的資料夾掛載進去 (使用 docker 的交互式模式)
+exec_script_in_deploy_env_with_kde() {
+    docker run --rm -it \
+    --net ${DOCKER_NETWORK} \
+    --workdir ${KDE_PATH} \
+    -v ${KUBECONFIG}:/root/.kube/config \
+    -v ${KDE_PATH}:${KDE_PATH} \
+    r82wei/deploy-env:1.0.0 \
+    bash -c "$1"
+}
+
+get_namespaces() {
+    namespaces=($(exec_in_deploy_env 'kubectl get namespaces --no-headers -o custom-columns=":metadata.name"'))
+    echo "${namespaces[@]}"
+}
+
+get_pods() {
+    NAMESPACE=$1
+    pods=($(exec_in_deploy_env "kubectl -n ${NAMESPACE} get pods --no-headers -o custom-columns=":metadata.name""))
+    echo "${pods[@]}"
+}
+
+get_services() {
+    NAMESPACE=$1
+    services=($(exec_in_deploy_env "kubectl -n ${NAMESPACE} get services --no-headers -o custom-columns=":metadata.name""))
+    echo "${services[@]}"
+}
+
+is_namespace_exist() {
+    NAMESPACE=$1
+    namespaces=($(get_namespaces))
+    # 判斷 NAMESPACE 是否在 namespaces 中
+    if [[ " ${namespaces[@]} " =~ " ${NAMESPACE} " ]]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+is_pod_exist() {
+    NAMESPACE=$1
+    POD=$2
+
+    if [[ -z "${NAMESPACE}" || -z "${POD}" ]]; then
+        echo "false"
+        return
+    fi
+
+    pods=($(get_pods ${NAMESPACE}))
+    # 判斷 POD 是否在 pods 中
+    if [[ " ${pods[@]} " =~ " ${POD} " ]]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+is_service_exist() {
+    NAMESPACE=$1
+    SERVICE=$2
+    
+    if [[ -z "${NAMESPACE}" || -z "${SERVICE}" ]]; then
+        echo "false"
+        return
+    fi
+    
+    services=($(get_services ${NAMESPACE}))
+    # 判斷 SERVICE 是否在 services 中
+    if [[ " ${services[@]} " =~ " ${SERVICE} " ]]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+is_pod_or_service_exist() {
+    NAMESPACE=$1
+    RESOURCE_TYPE=$2
+    RESOURCE_NAME=$3
+
+    # echo "NAMESPACE: ${NAMESPACE}"
+    # echo "RESOURCE_TYPE: ${RESOURCE_TYPE}"
+    # echo "RESOURCE_NAME: ${RESOURCE_NAME}"
+
+    # 如果 RESOURCE_TYPE 為 pod 則使用 is_pod_exist 檢查，否則使用 is_service_exist 檢查
+    if [[ "${RESOURCE_TYPE}" == "pod" ]]; then
+        # echo "is_pod_exist"
+        result=$(is_pod_exist ${NAMESPACE} ${RESOURCE_NAME})
+    else
+        # echo "is_service_exist"
+        result=$(is_service_exist ${NAMESPACE} ${RESOURCE_NAME})
+    fi
+
+    printf "%s" "${result}"
+}
+
+has_any_namespace() {
+    namespaces=($(exec_in_deploy_env 'kubectl get namespaces --no-headers -o custom-columns=":metadata.name"'))
+    
+    if [ ${#namespaces[@]} -eq 0 ]; then
+        echo "false"
+    else
+        echo "true"
+    fi
+}
+
+has_any_pod() {
+    NAMESPACE=$1
+    POD=$2
+
+    pods=($(kubectl -n ${NAMESPACE} get pods --no-headers -o custom-columns=":metadata.name"))
+    
+    if [ ${#pods[@]} -eq 0 ]; then
+        echo "false"
+    else
+        echo "true"
+    fi
+}
+
+has_any_service() {
+    NAMESPACE=$1
+    SERVICE=$2
+
+    services=($(kubectl -n ${NAMESPACE} get services --no-headers -o custom-columns=":metadata.name"))
+    
+    if [ ${#services[@]} -eq 0 ]; then
+        echo "false"
+    else
+        echo "true"
+    fi
+}
