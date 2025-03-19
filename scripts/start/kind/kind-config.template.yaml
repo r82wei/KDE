@@ -29,6 +29,8 @@ nodes:
     extraMounts:
       - hostPath: ${ENV_PATH}/${VOLUMES_DIR}
         containerPath: /opt/local-path-provisioner
-      - hostPath: ${ENV_PATH}/pki
-        containerPath: /etc/kubernetes/pki
+      - hostPath: ${ENV_PATH}/pki/ca.crt
+        containerPath: /etc/kubernetes/pki/ca.crt
+      - hostPath: ${ENV_PATH}/pki/ca.key
+        containerPath: /etc/kubernetes/pki/ca.key
   # - role: worker

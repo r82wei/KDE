@@ -119,13 +119,21 @@ init_env() {
         echo "ENV_NAME=${ENV_NAME}" >> ${ENV_PATH}/.env
         echo "ENV_TYPE=$2" >> ${ENV_PATH}/.env
         echo "CUR_ENV=${ENV_NAME}" > ${KDE_PATH}/current.env
-
+        
         # 設定環境變數檔案路徑
         touch ${ENV_FILE_PATH}
 
         # 設定 K8S container 名稱
         K8S_CONTAINER_NAME=${ENV_NAME}-control-plane
         echo "K8S_CONTAINER_NAME=${K8S_CONTAINER_NAME}" >> ${ENV_FILE_PATH}
+
+        # 如果 ca.key 不存在，則生成 ca.key 和 ca.crt
+        if [[ ! -f ${ENV_PATH}/pki/ca.key ]]; then
+            mkdir -p ${ENV_PATH}/pki
+            openssl genrsa -out ${ENV_PATH}/pki/ca.key 2048
+            openssl req -x509 -new -nodes -key ${ENV_PATH}/pki/ca.key -sha256 -days 3650 -out ${ENV_PATH}/pki/ca.crt \
+                -subj "/C=TW/ST=Taipei/L=Taipei/O=KDE/OU=KDE/CN=${K8S_CONTAINER_NAME}"
+        fi
 
         # 設定 DOCKER_NETWORK
         DOCKER_NETWORK="kde-${ENV_NAME}"
