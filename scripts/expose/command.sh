@@ -14,12 +14,7 @@ if [[ $1 == "--help" || $1 == "-h" ]]; then
     exit 0
 fi
 
-if [[ $(is_env_running ${ENV_NAME}) == "false" ]]; then
-    echo "環境 ${ENV_NAME} 未啟動"
-    exit 1
-else
-    echo "環境 ${ENV_NAME} 已啟動"
-fi
+exit_if_env_not_running ${ENV_NAME}
 
 NAMESPACE=$1
 RESOURCE_TYPE=$(echo $2 | tr '[:upper:]' '[:lower:]')
