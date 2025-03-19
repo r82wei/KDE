@@ -31,6 +31,7 @@ else
         exit 1
     fi
 
+    install_default_services
     echo "K8S 初始化已完成"
 fi
 ###### Init K8S ######

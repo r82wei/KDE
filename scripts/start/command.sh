@@ -10,12 +10,6 @@ show_help() {
     echo "  k3d            啟動 k3d 環境"
 }
 
-# 安裝 k8s 預設常用的服務
-install_default_services() {
-    script=$(< ${KDE_PATH}/scripts/start/install-default-services.sh)
-    exec_script_in_deploy_env_with_tty "${script}"
-}
-
 if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
     show_help
     exit 0
@@ -32,12 +26,10 @@ case "$2" in
     k3d)
         echo "啟動 k3d 環境"
         source scripts/start/k3d/init.sh
-        install_default_services
         ;;
     *)
         echo "啟動 kind 環境"
         source scripts/start/kind/init.sh
-        install_default_services
         ;;
 esac
 
