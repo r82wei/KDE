@@ -128,7 +128,7 @@ init_env() {
         echo "K8S_CONTAINER_NAME=${K8S_CONTAINER_NAME}" >> ${ENV_FILE_PATH}
 
         # 設定 DOCKER_NETWORK
-        DOCKER_NETWORK="${ENV_NAME}"
+        DOCKER_NETWORK="kde-${ENV_NAME}"
         echo "DOCKER_NETWORK=${DOCKER_NETWORK}" >> ${ENV_FILE_PATH}
 
         # 輸入 K8S_API_SERVER_PORT
@@ -179,8 +179,17 @@ is_port_valid() {
     fi
 }
 
-# 在 deploy-env 容器中執行命令，並且 echo 結果，適合不需掛載 volume、不需設定 Port 的命令
-exec_in_deploy_env() {
+# 在 deploy-env 容器中執行指令（使用 TTY 模式執行命令）
+exec_script_in_deploy_env_with_tty() {
+    docker run --rm -it \
+    --net ${DOCKER_NETWORK} \
+    -v ${KUBECONFIG}:/root/.kube/config \
+    r82wei/deploy-env:1.0.0 \
+    bash -c "$1"
+}
+
+# 在 deploy-env 容器中執行指令，並且回傳結果（不使用 TTY 模式執行命令）
+exec_script_in_deploy_env() {
     output=$(docker run --rm -i \
     --net ${DOCKER_NETWORK} \
     -v ${KUBECONFIG}:/root/.kube/config \
@@ -190,7 +199,8 @@ exec_in_deploy_env() {
     echo "${output}"
 }
 
-# 在 deploy-env 容器中執行命令，並且把 KDE 的資料夾掛載進去 (使用 docker 的交互式模式)
+# TODO: 需要使用當前系統使用者權限
+# 進入 deploy-env 容器中的 Bash 環境，並且把 KDE 的資料夾掛載進去 (使用 docker 的交互式模式)
 exec_bash_in_deploy_env_with_kde() {
     docker run --rm -it \
     --net ${DOCKER_NETWORK} \
@@ -201,31 +211,20 @@ exec_bash_in_deploy_env_with_kde() {
     bash
 }
 
-# 在 deploy-env 容器中執行命令，並且把 KDE 的資料夾掛載進去 (使用 docker 的交互式模式)
-exec_script_in_deploy_env_with_kde() {
-    docker run --rm -it \
-    --net ${DOCKER_NETWORK} \
-    --workdir ${KDE_PATH} \
-    -v ${KUBECONFIG}:/root/.kube/config \
-    -v ${KDE_PATH}:${KDE_PATH} \
-    r82wei/deploy-env:1.0.0 \
-    bash -c "$1"
-}
-
 get_namespaces() {
-    namespaces=($(exec_in_deploy_env 'kubectl get namespaces --no-headers -o custom-columns=":metadata.name"'))
+    namespaces=($(exec_script_in_deploy_env 'kubectl get namespaces --no-headers -o custom-columns=":metadata.name"'))
     echo "${namespaces[@]}"
 }
 
 get_pods() {
     NAMESPACE=$1
-    pods=($(exec_in_deploy_env "kubectl -n ${NAMESPACE} get pods --no-headers -o custom-columns=":metadata.name""))
+    pods=($(exec_script_in_deploy_env "kubectl -n ${NAMESPACE} get pods --no-headers -o custom-columns=":metadata.name""))
     echo "${pods[@]}"
 }
 
 get_services() {
     NAMESPACE=$1
-    services=($(exec_in_deploy_env "kubectl -n ${NAMESPACE} get services --no-headers -o custom-columns=":metadata.name""))
+    services=($(exec_script_in_deploy_env "kubectl -n ${NAMESPACE} get services --no-headers -o custom-columns=":metadata.name""))
     echo "${services[@]}"
 }
 
@@ -298,7 +297,7 @@ is_pod_or_service_exist() {
 }
 
 has_any_namespace() {
-    namespaces=($(exec_in_deploy_env 'kubectl get namespaces --no-headers -o custom-columns=":metadata.name"'))
+    namespaces=($(exec_script_in_deploy_env 'kubectl get namespaces --no-headers -o custom-columns=":metadata.name"'))
     
     if [ ${#namespaces[@]} -eq 0 ]; then
         echo "false"

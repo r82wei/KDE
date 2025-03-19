@@ -31,9 +31,6 @@ else
         exit 1
     fi
 
-    # Install local-path-storage & ingress nginx
-    exec_script_in_deploy_env_with_kde "./scripts/start/install-local-path-storage.sh && ./scripts/start/helm-install-ingress.sh"
-
     echo "K8S 初始化已完成"
 fi
 ###### Init K8S ######

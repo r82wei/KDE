@@ -1,8 +1,13 @@
 #!/bin/bash
 
+
+# Install local-path-storage
+kubectl apply -f ./scripts/start/yaml/local-path-storage.yaml
+
+
+# Install ingress-nginx
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
-
 helm install ingress-nginx ingress-nginx/ingress-nginx \
     -n ingress-nginx --create-namespace \
     --wait \
@@ -10,3 +15,4 @@ helm install ingress-nginx ingress-nginx/ingress-nginx \
     --set controller.config.enable-access-log=true \
     --set controller.service.nodePorts.http=30080 \
     --set controller.service.nodePorts.https=30443
+
