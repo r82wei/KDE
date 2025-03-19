@@ -40,3 +40,5 @@ case "$2" in
         install_default_services
         ;;
 esac
+
+source scripts/k9s/start.sh
