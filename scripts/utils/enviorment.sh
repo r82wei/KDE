@@ -33,6 +33,13 @@ exit_if_env_not_exist() {
     fi
 }
 
+exit_if_env_not_running() {
+    if [[ $(is_env_running $1) == "false" ]]; then
+        echo "環境 ${ENV_NAME} 未啟動"
+        exit 1
+    fi
+}
+
 load_enviorment_env() {
     source ${ENVIORMENTS_PATH}/${1:-${CUR_ENV}}/.env
     export KUBECONFIG=${ENVIORMENTS_PATH}/${1:-${CUR_ENV}}/${KUBE_CONFIG_DIR}/config
