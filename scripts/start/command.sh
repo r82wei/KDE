@@ -22,10 +22,12 @@ case "$2" in
         ;;
     k3d)
         echo "啟動 k3d 環境"
+        set_default_env ${1:-${CUR_ENV}}
         source scripts/start/k3s/init.sh
         ;;
     *)
         echo "啟動 kind 環境"
+        set_default_env ${1:-${CUR_ENV}}
         source scripts/start/kind/init.sh
         ;;
 esac
