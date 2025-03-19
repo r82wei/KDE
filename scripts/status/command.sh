@@ -16,10 +16,10 @@ RUNNING_STATUS=$(docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}\t
 # 將 K8S_CONTAINER_NAMES 內沒有在 STATUS 內的 container 狀態設為 "未啟動" 並且加入 STATUS 字串
 for NAME in ${K8S_CONTAINER_NAMES[@]}; do
     if ! echo "${RUNNING_STATUS}" | grep -q "${NAME}"; then
-        UNRUNNING_STATUS="${UNRUNNING_STATUS}${NAME}     未啟動"
+        UNRUNNING_STATUS="${UNRUNNING_STATUS}${NAME}\t未啟動\n"
     fi
 done
 
 echo "${RUNNING_STATUS}"
 echo "--------------------------------"
-echo "${UNRUNNING_STATUS}"
+echo -e "${UNRUNNING_STATUS}"
