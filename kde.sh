@@ -22,9 +22,10 @@ if [[ $(is_env_exist ${CUR_ENV}) == "false" ]]; then
     echo "環境 ${CUR_ENV} 不存在"
     # 修改預設環境
     set_default_env
+else
+    load_enviorment_env ${CUR_ENV}
 fi
 
-load_enviorment_env ${CUR_ENV}
 
 # 定義顯示說明的函數
 show_help() {
@@ -100,7 +101,6 @@ case "$1" in
         ;;
     expose)
         shift  # 移除 "expose" 指令
-        echo "port-forward 相關操作"
         source scripts/expose/command.sh
         ;;
     k9s)
