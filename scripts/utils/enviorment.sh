@@ -41,8 +41,10 @@ exit_if_env_not_running() {
 }
 
 load_enviorment_env() {
-    source ${ENVIORMENTS_PATH}/${1:-${CUR_ENV}}/.env
-    export KUBECONFIG=${ENVIORMENTS_PATH}/${1:-${CUR_ENV}}/${KUBE_CONFIG_DIR}/config
+    if [[ -d ${ENVIORMENTS_PATH} && -d ${ENVIORMENTS_PATH}/${1:-${CUR_ENV}} ]]; then
+        source ${ENVIORMENTS_PATH}/${1:-${CUR_ENV}}/.env
+        export KUBECONFIG=${ENVIORMENTS_PATH}/${1:-${CUR_ENV}}/${KUBE_CONFIG_DIR}/config
+    fi
 }
 
 # 如果有 $1 則設定 CUR_ENV 為 $1，否則將 enviorments 底下第一個資料夾設定為 CUR_ENV
