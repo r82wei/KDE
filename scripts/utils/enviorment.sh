@@ -19,7 +19,7 @@ is_env_running() {
 }
 
 has_any_env() {
-    if [[ -z $(ls -1 ${ENVIORMENTS_PATH}) ]]; then
+    if [[ ! -d ${ENVIORMENTS_PATH} || -z $(ls -1 ${ENVIORMENTS_PATH}) ]]; then
         echo "false"
     else
         echo "true"
