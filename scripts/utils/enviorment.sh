@@ -225,6 +225,18 @@ exec_bash_in_deploy_env_with_kde() {
     bash
 }
 
+# TODO: 需要使用當前系統使用者權限
+# 進入 deploy-env 容器中的 Bash 環境，並且把 Volumes 的資料夾掛載進去 (使用 docker 的交互式模式)
+exec_bash_in_deploy_env_with_projects() {
+    docker run --rm -it \
+    --net ${DOCKER_NETWORK} \
+    --workdir /projects \
+    -v ${KUBECONFIG}:/root/.kube/config \
+    -v ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}:/projects \
+    r82wei/deploy-env:1.0.0 \
+    bash
+}
+
 get_namespaces() {
     namespaces=($(exec_script_in_deploy_env 'kubectl get namespaces --no-headers -o custom-columns=":metadata.name"'))
     echo "${namespaces[@]}"
