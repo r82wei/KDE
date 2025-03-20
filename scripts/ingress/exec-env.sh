@@ -11,7 +11,7 @@ docker run --rm -it \
 --workdir /tmp \
 --user $UID:$(id -g) \
 -v ${KDE_PATH}/${KUBE_CONFIG}:${KDE_PATH}/${KUBE_CONFIG} \
--v ${KDE_PATH}/scripts/mount-dir/mount-dir.sh:/tmp/mount-dir.sh \
+-v ${KDE_SCRIPTS_PATH}/mount-dir/mount-dir.sh:/tmp/mount-dir.sh \
 --env-file ${KDE_PATH}/kde.env \
 -e TARGET_MOUNT_DIR=${TARGET_MOUNT_DIR} \
 -e KUBECONFIG=${KDE_PATH}/${KUBE_CONFIG} \

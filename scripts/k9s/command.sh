@@ -18,14 +18,14 @@ fi
 case "$1" in
     --port|-p)
         shift  # 移除 "--port" 指令
-        source scripts/k9s/expose.sh $1
+        source ${KDE_SCRIPTS_PATH}/k9s/expose.sh $1
         ;;
     --help|-h)
         show_help
         exit 0
         ;;
     *)
-        source scripts/k9s/start.sh
+        source ${KDE_SCRIPTS_PATH}/k9s/start.sh
         exit 0
         ;;
 esac

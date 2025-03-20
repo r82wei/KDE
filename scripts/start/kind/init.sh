@@ -6,7 +6,7 @@ if docker ps -a --format '{{.Names}}' | grep -qw ${K8S_CONTAINER_NAME}; then
     echo "K8S named '${K8S_CONTAINER_NAME}' exists."
 else
     if [[ ! -f "${ENV_PATH}/kind-config.yaml" ]]; then
-        envsubst < ${KDE_PATH}/scripts/start/kind/kind-config.template.yaml > ${ENV_PATH}/kind-config.yaml
+        envsubst < ${KDE_SCRIPTS_PATH}/start/kind/kind-config.template.yaml > ${ENV_PATH}/kind-config.yaml
     fi
 
     # Ensure Docker network

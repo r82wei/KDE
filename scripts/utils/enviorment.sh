@@ -166,7 +166,7 @@ init_env() {
 
 # 安裝 k8s 預設常用的服務
 install_default_services() {
-    script=$(< ${KDE_PATH}/scripts/start/install-default-services.sh)
+    script=$(< ${KDE_SCRIPTS_PATH}/start/install-default-services.sh)
     exec_script_in_deploy_env_with_tty "${script}"
 }
 

@@ -37,5 +37,5 @@ if [[ $(is_namespace_exist ${NAMESPACE}) == "true" && $(is_pod_or_service_exist 
     echo "LOCAL_PORT: ${LOCAL_PORT}"
     exec_port_forward ${NAMESPACE} ${RESOURCE_TYPE} ${RESOURCE_NAME} ${TARGET_PORT} ${LOCAL_PORT}
 else
-    source scripts/expose/hint.sh
+    source ${KDE_SCRIPTS_PATH}/expose/hint.sh
 fi

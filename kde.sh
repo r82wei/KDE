@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# 設定 KDE scripts 路徑
+export KDE_SCRIPTS_PATH=$(dirname "$(realpath "$0")")/scripts
 # 設定 KDE 根目錄路徑
 export KDE_PATH=$PWD
 # 設定環境目錄路徑(enviorments)
@@ -9,7 +11,7 @@ export KUBE_CONFIG_DIR=kubeconfig
 # 設定 VOLUMES_DIR
 export VOLUMES_DIR=volumes
 
-source scripts/utils/enviorment.sh
+source ${KDE_SCRIPTS_PATH}/utils/enviorment.sh
 
 # 設定當前環境的環境變數
 if [[ -f ${KDE_PATH}/current.env ]]; then
@@ -54,19 +56,19 @@ case "$1" in
         ;;
     start)
         shift  # 移除 "start" 指令
-        source scripts/start/command.sh
+        source ${KDE_SCRIPTS_PATH}/start/command.sh
         ;;
     stop)
         shift  # 移除 "stop" 指令
-        source scripts/stop/command.sh
+        source ${KDE_SCRIPTS_PATH}/stop/command.sh
         ;;
     restart)
         shift  # 移除 "restart" 指令
-        source scripts/restart/command.sh
+        source ${KDE_SCRIPTS_PATH}/restart/command.sh
         ;;
     status)
         shift  # 移除 "status" 指令
-        source scripts/status/command.sh
+        source ${KDE_SCRIPTS_PATH}/status/command.sh
         ;;
     current)
         if [[ -z "${CUR_ENV}" ]]; then
@@ -81,38 +83,38 @@ case "$1" in
         ;;
     remove)
         shift  # 移除 "remove" 指令
-        source scripts/remove/command.sh
+        source ${KDE_SCRIPTS_PATH}/remove/command.sh
         ;;
     exec)
         shift  # 移除 "exec" 指令
-        source scripts/exec/command.sh
+        source ${KDE_SCRIPTS_PATH}/exec/command.sh
         ;;
     ingress)
         shift  # 移除 "ingress" 指令
         echo "ingress 相關操作"
-        source scripts/ingress/command.sh
+        source ${KDE_SCRIPTS_PATH}/ingress/command.sh
         ;;
     mount)
         shift  # 移除 "mount" 指令
         echo "掛載目錄到指定的 Pod"
-        source scripts/mount/command.sh
+        source ${KDE_SCRIPTS_PATH}/mount/command.sh
         ;;
     expose)
         shift  # 移除 "expose" 指令
-        source scripts/expose/command.sh
+        source ${KDE_SCRIPTS_PATH}/expose/command.sh
         ;;
     k9s)
         shift  # 移除 "k9s" 指令
-        source scripts/k9s/command.sh
+        source ${KDE_SCRIPTS_PATH}/k9s/command.sh
         exit 0
         ;;
     project)
         shift  # 移除 "project"  指令
-        source scripts/project/command.sh
+        source ${KDE_SCRIPTS_PATH}/project/command.sh
         ;;
     reset)
         shift  # 移除 "reset" 指令
-        source scripts/reset/command.sh
+        source ${KDE_SCRIPTS_PATH}/reset/command.sh
         exit 0
         ;;
     *)

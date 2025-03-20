@@ -25,12 +25,12 @@ set_default_env ${1:-${CUR_ENV}}
 case "$2" in
     k3d)
         echo "啟動 k3d 環境"
-        source scripts/start/k3d/init.sh
+        source ${KDE_SCRIPTS_PATH}/start/k3d/init.sh
         ;;
     *)
         echo "啟動 kind 環境"
-        source scripts/start/kind/init.sh
+        source ${KDE_SCRIPTS_PATH}/start/kind/init.sh
         ;;
 esac
 
-source scripts/k9s/start.sh
+source ${KDE_SCRIPTS_PATH}/k9s/start.sh
