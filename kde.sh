@@ -4,8 +4,6 @@
 export KDE_PATH=$PWD
 # 設定環境目錄路徑(enviorments)
 export ENVIORMENTS_PATH=${KDE_PATH}/enviorments
-# 設定專案目錄路徑(projects)
-export PROJECTS_PATH=${ENVIORMENTS_PATH}/projects
 # 設定 KUBE_CONFIG_DIR
 export KUBE_CONFIG_DIR=kubeconfig
 # 設定 VOLUMES_DIR
