@@ -57,12 +57,13 @@ fetch_project() {
 
 init_project_deploy_script() {
     PROJECT_NAME=$1
-    touch ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/pre-deploy.sh
-    chmod +x ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/pre-deploy.sh
-    touch ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/deploy.sh
-    chmod +x ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/deploy.sh
-    touch ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/post-deploy.sh
-    chmod +x ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/post-deploy.sh
+    PROJECT_REPO_PATH=${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
+    touch ${PROJECT_REPO_PATH}/pre-deploy.sh
+    chmod +x ${PROJECT_REPO_PATH}/pre-deploy.sh
+    touch ${PROJECT_REPO_PATH}/deploy.sh
+    chmod +x ${PROJECT_REPO_PATH}/deploy.sh
+    touch ${PROJECT_REPO_PATH}/post-deploy.sh
+    chmod +x ${PROJECT_REPO_PATH}/post-deploy.sh
 }
 
 git_repo_name() {
