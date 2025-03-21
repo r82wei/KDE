@@ -102,7 +102,7 @@ remove_env() {
     # 強制刪除 k8s 容器
     stop_env ${ENV_NAME} -f
 
-    sudo rm -rf ${ENVIORMENTS_PATH}/${ENV_NAME}
+    rm -rf ${ENVIORMENTS_PATH}/${ENV_NAME}
     echo "環境 ${ENV_NAME} 已刪除"
     set_default_env
     exit 0
