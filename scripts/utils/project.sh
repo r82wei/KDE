@@ -9,19 +9,28 @@ is_project_exist() {
 }
 
 exit_if_project_exist() {
-    if [[ $(is_project_exist $1) == "true" ]]; then
+    PROJECT_NAME=$1
+    if [[ $(is_project_exist ${PROJECT_NAME}) == "true" ]]; then
         echo "專案 ${1} 已存在"
         exit 1
     fi
 }
 
 exit_if_project_not_exist() {
-    if [[ $(is_project_exist $1) == "false" ]]; then
+    PROJECT_NAME=$1
+    if [[ $(is_project_exist ${PROJECT_NAME}) == "false" ]]; then
         echo "專案 ${1} 不存在"
         exit 1
     fi
 }
 
+exit_if_project_env_not_exist() {
+    PROJECT_NAME=$1
+    if [[ ! -f ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env ]]; then
+        echo "專案 ${PROJECT_NAME} 設定檔(project.env) 不存在"
+        exit 1
+    fi
+}
 # 建立專案資料夾、namespace
 create_project() {
     PROJECT_NAME=$1
@@ -47,10 +56,7 @@ fetch_project() {
     create_namespace ${PROJECT_NAME}
     PROJECT_REPO_PATH=${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
     download_git_repo ${PROJECT_NAME} ${PROJECT_GIT_REPO_URL} ${PROJECT_GIT_REPO_BRANCH} ${PROJECT_REPO_PATH}
-    if [[ ! -f ${PROJECT_REPO_PATH}/project.env ]]; then
-        echo "專案 ${PROJECT_NAME} 設定檔(project.env) 不存在"
-        exit 1
-    fi
+    exit_if_project_env_not_exist ${PROJECT_NAME}
     source ${PROJECT_REPO_PATH}/project.env
     download_git_repo ${PROJECT_NAME} ${GIT_REPO_URL} ${GIT_REPO_BRANCH} ${PROJECT_REPO_PATH}/$(git_repo_name ${GIT_REPO_URL})
 }
