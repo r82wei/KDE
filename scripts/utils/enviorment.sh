@@ -146,8 +146,8 @@ init_env() {
         export K8S_API_SERVER_PORT=${K8S_API_SERVER_PORT:-6443}
 
         # 輸入 K8S_INGRESS_NGINX_PORT
-        read -p "請輸入 K8S ingress nginx port (預設: 8088): " K8S_INGRESS_NGINX_PORT
-        export K8S_INGRESS_NGINX_PORT=${K8S_INGRESS_NGINX_PORT:-8088}
+        read -p "請輸入 K8S ingress nginx port (預設: 80): " K8S_INGRESS_NGINX_PORT
+        export K8S_INGRESS_NGINX_PORT=${K8S_INGRESS_NGINX_PORT:-80}
 
         # 設定 STORAGE_CLASS
         STORAGE_CLASS=local-path
