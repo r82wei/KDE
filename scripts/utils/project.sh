@@ -27,7 +27,7 @@ create_project() {
     PROJECT_NAME=$1
     exit_if_project_exist ${PROJECT_NAME}
     mkdir -p ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
-    exec_script_in_deploy_env "kubectl create namespace ${PROJECT_NAME}"
+    create_namespace ${PROJECT_NAME}
     set_git_repo ${PROJECT_NAME}
     source ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     REPO_PATH=${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL})
@@ -38,6 +38,17 @@ create_project() {
     echo "DEPLOY_IMAGE=${DEPLOY_IMAGE}" >> ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     init_project_deploy_script ${PROJECT_NAME}
     echo "專案 ${PROJECT_NAME} 已建立"
+}
+
+fetch_project() {
+    PROJECT_NAME=$1
+    PROJECT_GIT_REPO_URL=$2
+    PROJECT_GIT_REPO_BRANCH=$3
+    create_namespace ${PROJECT_NAME}
+    PROJECT_REPO_PATH=${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
+    download_git_repo ${PROJECT_NAME} ${PROJECT_GIT_REPO_URL} ${PROJECT_GIT_REPO_BRANCH} ${PROJECT_REPO_PATH}
+    source ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+    download_git_repo ${PROJECT_NAME} ${GIT_REPO_URL} ${GIT_REPO_BRANCH} ${PROJECT_REPO_PATH}/$(git_repo_name ${GIT_REPO_URL})
 }
 
 init_project_deploy_script() {
@@ -73,7 +84,7 @@ download_git_repo() {
     if [[ -d ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL}) ]]; then
         rm -r ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL})
     fi
-    
+
     # 下載 git repo
     git clone --recursive -b ${GIT_REPO_BRANCH} ${GIT_REPO_URL} ${REPO_PATH}
 }

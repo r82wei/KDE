@@ -248,6 +248,11 @@ exec_script_in_container_with_project() {
     bash -c "${SCRIPT}"
 }
 
+create_namespace() {
+    NAMESPACE=$1
+    exec_script_in_deploy_env "kubectl create namespace ${NAMESPACE}"
+}
+
 get_namespaces() {
     namespaces=($(exec_script_in_deploy_env_without_tty 'kubectl get namespaces --no-headers -o custom-columns=":metadata.name"'))
     echo "${namespaces[@]}"
