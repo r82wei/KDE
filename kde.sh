@@ -9,7 +9,7 @@ export ENVIORMENTS_PATH=${KDE_PATH}/environments
 # 設定 KUBE_CONFIG_DIR
 export KUBE_CONFIG_DIR=kubeconfig
 # 設定 VOLUMES_DIR
-export VOLUMES_DIR=volumes
+export VOLUMES_DIR=namespaces
 
 source ${KDE_SCRIPTS_PATH}/utils/enviorment.sh
 
