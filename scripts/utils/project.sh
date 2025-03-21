@@ -108,9 +108,15 @@ deploy_project() {
     exit_if_project_not_exist ${PROJECT_NAME}
     echo ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
     source ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
-    exec_script_in_container_with_project ${PROJECT_NAME} ${RUNTIME_IMAGE} ./pre-deploy.sh
-    exec_script_in_container_with_project ${PROJECT_NAME} ${DEPLOY_IMAGE} ./deploy.sh
-    exec_script_in_container_with_project ${PROJECT_NAME} ${DEPLOY_IMAGE} ./post-deploy.sh
+    if [[ -f ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/pre-deploy.sh ]]; then
+        exec_script_in_container_with_project ${PROJECT_NAME} ${RUNTIME_IMAGE} ./pre-deploy.sh
+    fi
+    if [[ -f ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/deploy.sh ]]; then
+        exec_script_in_container_with_project ${PROJECT_NAME} ${DEPLOY_IMAGE} ./deploy.sh
+    fi
+    if [[ -f ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/post-deploy.sh ]]; then
+        exec_script_in_container_with_project ${PROJECT_NAME} ${DEPLOY_IMAGE} ./post-deploy.sh
+    fi
     echo "專案 ${PROJECT_NAME} 已部署完成"
 }
 
