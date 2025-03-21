@@ -47,7 +47,11 @@ fetch_project() {
     create_namespace ${PROJECT_NAME}
     PROJECT_REPO_PATH=${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
     download_git_repo ${PROJECT_NAME} ${PROJECT_GIT_REPO_URL} ${PROJECT_GIT_REPO_BRANCH} ${PROJECT_REPO_PATH}
-    source ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+    if [[ ! -f ${PROJECT_REPO_PATH}/project.env ]]; then
+        echo "專案 ${PROJECT_NAME} 設定檔(project.env) 不存在"
+        exit 1
+    fi
+    source ${PROJECT_REPO_PATH}/project.env
     download_git_repo ${PROJECT_NAME} ${GIT_REPO_URL} ${GIT_REPO_BRANCH} ${PROJECT_REPO_PATH}/$(git_repo_name ${GIT_REPO_URL})
 }
 
