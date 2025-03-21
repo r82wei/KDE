@@ -5,7 +5,7 @@ export KDE_SCRIPTS_PATH=$(dirname "$(realpath "$0")")/scripts
 # 設定 KDE 根目錄路徑
 export KDE_PATH=$PWD
 # 設定環境目錄路徑(enviorments)
-export ENVIORMENTS_PATH=${KDE_PATH}/enviorments
+export ENVIORMENTS_PATH=${KDE_PATH}/environments
 # 設定 KUBE_CONFIG_DIR
 export KUBE_CONFIG_DIR=kubeconfig
 # 設定 VOLUMES_DIR
@@ -33,11 +33,11 @@ show_help() {
     echo ""
     echo "command:"
     echo "  ls              列出 k8s 環境"
-    echo "  start           啟動 k8s 環境"
+    echo "  start, create   啟動 k8s 環境"
     echo "  stop            停止 k8s 環境"
     echo "  restart         重啟 k8s 環境"
     echo "  status          顯示 k8s 環境狀態"
-    echo "  remove          移除 k8s 環境"
+    echo "  remove, rm      移除 k8s 環境"
     echo "  current         顯示目前 k8s 環境名稱"
     echo "  k9s             進入 k9s dashboard"
     echo "  ingress         ingress 相關操作"
@@ -54,7 +54,7 @@ case "$1" in
     ls|list)
         ls ${ENVIORMENTS_PATH}
         ;;
-    start)
+    start|create)
         shift  # 移除 "start" 指令
         source ${KDE_SCRIPTS_PATH}/start/command.sh
         ;;
@@ -81,7 +81,7 @@ case "$1" in
         shift  # 移除 "status" 指令
         set_default_env $1
         ;;
-    remove)
+    remove|rm)
         shift  # 移除 "remove" 指令
         source ${KDE_SCRIPTS_PATH}/remove/command.sh
         ;;

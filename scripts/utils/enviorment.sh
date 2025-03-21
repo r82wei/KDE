@@ -169,7 +169,7 @@ init_env() {
 # 安裝 k8s 預設常用的服務
 install_default_services() {
     script=$(< ${KDE_SCRIPTS_PATH}/start/install-default-services.sh)
-    exec_script_in_deploy_env_with_tty "${script}"
+    exec_script_in_deploy_env "${script}"
 }
 
 exec_port_forward() {
@@ -196,63 +196,72 @@ is_port_valid() {
 }
 
 # 在 deploy-env 容器中執行指令（使用 TTY 模式執行命令）
-exec_script_in_deploy_env_with_tty() {
+exec_script_in_deploy_env() {
     docker run --rm -it \
     --net ${DOCKER_NETWORK} \
-    -v ${KUBECONFIG}:/root/.kube/config \
+    -e KUBECONFIG=/.kube/config \
+    -v ${KUBECONFIG}:/.kube/config \
     r82wei/deploy-env:1.0.0 \
     bash -c "$1"
 }
 
 # 在 deploy-env 容器中執行指令，並且回傳結果（不使用 TTY 模式執行命令）
-exec_script_in_deploy_env() {
+exec_script_in_deploy_env_without_tty() {
     output=$(docker run --rm -i \
     --net ${DOCKER_NETWORK} \
-    -v ${KUBECONFIG}:/root/.kube/config \
+    -e KUBECONFIG=/.kube/config \
+    -v ${KUBECONFIG}:/.kube/config \
     r82wei/deploy-env:1.0.0 \
     bash -c "$1")
 
     echo "${output}"
 }
 
-# TODO: 需要使用當前系統使用者權限
-# 進入 deploy-env 容器中的 Bash 環境，並且把 KDE 的資料夾掛載進去 (使用 docker 的交互式模式)
-exec_bash_in_deploy_env_with_kde() {
-    docker run --rm -it \
-    --net ${DOCKER_NETWORK} \
-    --workdir ${KDE_PATH} \
-    -v ${KUBECONFIG}:/root/.kube/config \
-    -v ${KDE_PATH}:${KDE_PATH} \
-    r82wei/deploy-env:1.0.0 \
-    bash
-}
-
-# TODO: 需要使用當前系統使用者權限
-# 進入 deploy-env 容器中的 Bash 環境，並且把 Volumes 的資料夾掛載進去 (使用 docker 的交互式模式)
+# 進入 deploy-env 容器中的 Bash 環境，並且把 Volumes 的資料夾掛載進去 (使用 TTY 模式執行命令)
 exec_bash_in_deploy_env_with_projects() {
     docker run --rm -it \
+    --user $UID:$(id -g) \
     --net ${DOCKER_NETWORK} \
     --workdir /projects \
-    -v ${KUBECONFIG}:/root/.kube/config \
+    -e KUBECONFIG=/.kube/config \
+    -v ${KUBECONFIG}:/.kube/config \
     -v ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}:/projects \
     r82wei/deploy-env:1.0.0 \
     bash
 }
 
+# 進入 deploy-env 容器中的 Bash 環境，並且把 Volumes/{PROJECT_NAME} 的資料夾掛載進去 (使用 TTY 模式執行命令)
+exec_script_in_container_with_project() {
+    PROJECT_NAME=$1
+    DOCKER_IMAGE=$2
+    SCRIPT=$3
+    
+    docker run --rm -it \
+    --user $UID:$(id -g) \
+    --net ${DOCKER_NETWORK} \
+    --workdir /${PROJECT_NAME} \
+    --env-file ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env \
+    -e KUBECONFIG=/.kube/config \
+    -v ${ENVIORMENTS_PATH}/${CUR_ENV}/${KUBE_CONFIG_DIR}/config:/.kube/config \
+    -v ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}:/${PROJECT_NAME} \
+    ${DOCKER_IMAGE} \
+    bash -c "${SCRIPT}"
+}
+
 get_namespaces() {
-    namespaces=($(exec_script_in_deploy_env 'kubectl get namespaces --no-headers -o custom-columns=":metadata.name"'))
+    namespaces=($(exec_script_in_deploy_env_without_tty 'kubectl get namespaces --no-headers -o custom-columns=":metadata.name"'))
     echo "${namespaces[@]}"
 }
 
 get_pods() {
     NAMESPACE=$1
-    pods=($(exec_script_in_deploy_env "kubectl -n ${NAMESPACE} get pods --no-headers -o custom-columns=":metadata.name""))
+    pods=($(exec_script_in_deploy_env_without_tty "kubectl -n ${NAMESPACE} get pods --no-headers -o custom-columns=":metadata.name""))
     echo "${pods[@]}"
 }
 
 get_services() {
     NAMESPACE=$1
-    services=($(exec_script_in_deploy_env "kubectl -n ${NAMESPACE} get services --no-headers -o custom-columns=":metadata.name""))
+    services=($(exec_script_in_deploy_env_without_tty "kubectl -n ${NAMESPACE} get services --no-headers -o custom-columns=":metadata.name""))
     echo "${services[@]}"
 }
 
@@ -325,7 +334,7 @@ is_pod_or_service_exist() {
 }
 
 has_any_namespace() {
-    namespaces=($(exec_script_in_deploy_env 'kubectl get namespaces --no-headers -o custom-columns=":metadata.name"'))
+    namespaces=($(exec_script_in_deploy_env_without_tty 'kubectl get namespaces --no-headers -o custom-columns=":metadata.name"'))
     
     if [ ${#namespaces[@]} -eq 0 ]; then
         echo "false"
