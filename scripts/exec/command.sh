@@ -14,7 +14,7 @@ case "$1" in
         ;;
     *)
         exit_if_env_not_exist ${1:-${CUR_ENV}}
-        load_enviorment_env ${1:-${CUR_ENV}}
+        load_enviroment_env ${1:-${CUR_ENV}}
         exec_bash_in_deploy_env_with_projects
         ;;
 esac

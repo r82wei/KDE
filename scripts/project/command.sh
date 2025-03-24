@@ -54,7 +54,7 @@ fi
 
 case "${COMMAND}" in
     ls|list)
-        ls ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}
+        ls ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}
         exit 0
         ;;
     create)

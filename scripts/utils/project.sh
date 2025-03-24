@@ -1,7 +1,7 @@
 #!/bin/bash
 
 is_project_exist() {
-    if [[ ! -d ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/$1 ]]; then
+    if [[ ! -d ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/$1 ]]; then
         echo "false"
     else
         echo "true"
@@ -26,7 +26,7 @@ exit_if_project_not_exist() {
 
 exit_if_project_env_not_exist() {
     PROJECT_NAME=$1
-    if [[ ! -f ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env ]]; then
+    if [[ ! -f ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env ]]; then
         echo "專案 ${PROJECT_NAME} 設定檔(project.env) 不存在"
         exit 1
     fi
@@ -35,16 +35,16 @@ exit_if_project_env_not_exist() {
 create_project() {
     PROJECT_NAME=$1
     exit_if_project_exist ${PROJECT_NAME}
-    mkdir -p ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
+    mkdir -p ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
     create_namespace ${PROJECT_NAME}
     set_git_repo ${PROJECT_NAME}
-    source ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
-    REPO_PATH=${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL})
+    source ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+    REPO_PATH=${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL})
     download_git_repo ${PROJECT_NAME} ${GIT_REPO_URL} ${GIT_REPO_BRANCH} ${REPO_PATH}
     read -p "請輸入專案執行(建置)環境 Image (執行 pre-deploy.sh 的環境): " RUNTIME_IMAGE
-    echo "RUNTIME_IMAGE=${RUNTIME_IMAGE}" >> ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+    echo "RUNTIME_IMAGE=${RUNTIME_IMAGE}" >> ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     read -p "請輸入專案部署環境 Image (執行 deploy.sh 的環境): " DEPLOY_IMAGE
-    echo "DEPLOY_IMAGE=${DEPLOY_IMAGE}" >> ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+    echo "DEPLOY_IMAGE=${DEPLOY_IMAGE}" >> ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     init_project_deploy_script ${PROJECT_NAME}
     echo "專案 ${PROJECT_NAME} 已建立"
 }
@@ -54,7 +54,7 @@ fetch_project() {
     PROJECT_GIT_REPO_URL=$2
     PROJECT_GIT_REPO_BRANCH=$3
     create_namespace ${PROJECT_NAME}
-    PROJECT_REPO_PATH=${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
+    PROJECT_REPO_PATH=${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
     download_git_repo ${PROJECT_NAME} ${PROJECT_GIT_REPO_URL} ${PROJECT_GIT_REPO_BRANCH} ${PROJECT_REPO_PATH}
     exit_if_project_env_not_exist ${PROJECT_NAME}
     source ${PROJECT_REPO_PATH}/project.env
@@ -63,7 +63,7 @@ fetch_project() {
 
 init_project_deploy_script() {
     PROJECT_NAME=$1
-    PROJECT_REPO_PATH=${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
+    PROJECT_REPO_PATH=${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
     touch ${PROJECT_REPO_PATH}/pre-deploy.sh
     chmod +x ${PROJECT_REPO_PATH}/pre-deploy.sh
     touch ${PROJECT_REPO_PATH}/deploy.sh
@@ -81,9 +81,9 @@ set_git_repo() {
     PROJECT_NAME=$1
     exit_if_project_not_exist ${PROJECT_NAME}
     read -p "請輸入 git repo HTTPS URL: " GIT_REPO_URL
-    echo "GIT_REPO_URL=${GIT_REPO_URL}" >> ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+    echo "GIT_REPO_URL=${GIT_REPO_URL}" >> ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     read -p "請輸入分支名稱(default: main): " GIT_REPO_BRANCH
-    echo "GIT_REPO_BRANCH=${GIT_REPO_BRANCH}" >> ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+    echo "GIT_REPO_BRANCH=${GIT_REPO_BRANCH}" >> ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
 }
 
 download_git_repo() {
@@ -92,8 +92,8 @@ download_git_repo() {
     GIT_REPO_BRANCH=$3
     REPO_PATH=$4
 
-    if [[ -d ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL}) ]]; then
-        rm -r ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL})
+    if [[ -d ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL}) ]]; then
+        rm -r ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL})
     fi
 
     # 下載 git repo
@@ -111,21 +111,21 @@ create_link() {
     fi
     # 透過資料夾路徑取得資料夾名稱
     DIR_NAME=$(basename ${DIR_PATH})
-    ln -s ${DIR_PATH} ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/${DIR_NAME}
+    ln -s ${DIR_PATH} ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/${DIR_NAME}
 }
 
 deploy_project() {
     PROJECT_NAME=$1
     exit_if_project_not_exist ${PROJECT_NAME}
-    echo ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
-    source ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
-    if [[ -f ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/pre-deploy.sh ]]; then
+    echo ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
+    source ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+    if [[ -f ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/pre-deploy.sh ]]; then
         exec_script_in_container_with_project ${PROJECT_NAME} ${RUNTIME_IMAGE} ./pre-deploy.sh
     fi
-    if [[ -f ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/deploy.sh ]]; then
+    if [[ -f ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/deploy.sh ]]; then
         exec_script_in_container_with_project ${PROJECT_NAME} ${DEPLOY_IMAGE} ./deploy.sh
     fi
-    if [[ -f ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/post-deploy.sh ]]; then
+    if [[ -f ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/post-deploy.sh ]]; then
         exec_script_in_container_with_project ${PROJECT_NAME} ${DEPLOY_IMAGE} ./post-deploy.sh
     fi
     echo "專案 ${PROJECT_NAME} 已部署完成"
@@ -141,14 +141,14 @@ remove_project() {
     PROJECT_NAME=$1
     exit_if_project_not_exist ${PROJECT_NAME}
     exec_script_in_deploy_env "kubectl delete ns ${PROJECT_NAME}"
-    rm -rf ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
+    rm -rf ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
     echo "專案 ${PROJECT_NAME} 已刪除"
 }
 
 exec_project_runtime_container() {
     PROJECT_NAME=$1
     exit_if_project_not_exist ${PROJECT_NAME}
-    source ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+    source ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     REPO_NAME=$(git_repo_name ${GIT_REPO_URL})
     echo "REPO_NAME: ${REPO_NAME}"
     exec_script_in_container_with_project ${PROJECT_NAME} ${RUNTIME_IMAGE} "cd ${REPO_NAME} && bash"
@@ -157,6 +157,6 @@ exec_project_runtime_container() {
 exec_project_deploy_container() {
     PROJECT_NAME=$1
     exit_if_project_not_exist ${PROJECT_NAME}
-    source ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+    source ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     exec_script_in_container_with_project ${PROJECT_NAME} ${DEPLOY_IMAGE} bash
 }

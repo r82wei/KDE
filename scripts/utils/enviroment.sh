@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# 檢查 $1 的環境在 enviorments 底下是否存在，存在則回傳 true，不存在則回傳 false
+# 檢查 $1 的環境在 enviroments 底下是否存在，存在則回傳 true，不存在則回傳 false
 is_env_exist() {
-    if [[ -n $1 && -d ${ENVIORMENTS_PATH}/${1} ]]; then
+    if [[ -n $1 && -d ${ENVIROMENTS_PATH}/${1} ]]; then
         echo "true"
     else
         echo "false"
@@ -19,7 +19,7 @@ is_env_running() {
 }
 
 has_any_env() {
-    if [[ ! -d ${ENVIORMENTS_PATH} || -z $(ls -1 ${ENVIORMENTS_PATH}) ]]; then
+    if [[ ! -d ${ENVIROMENTS_PATH} || -z $(ls -1 ${ENVIROMENTS_PATH}) ]]; then
         echo "false"
     else
         echo "true"
@@ -40,20 +40,20 @@ exit_if_env_not_running() {
     fi
 }
 
-load_enviorment_env() {
-    if [[ -d ${ENVIORMENTS_PATH} && -d ${ENVIORMENTS_PATH}/${1:-${CUR_ENV}} ]]; then
-        source ${ENVIORMENTS_PATH}/${1:-${CUR_ENV}}/.env
-        export KUBECONFIG=${ENVIORMENTS_PATH}/${1:-${CUR_ENV}}/${KUBE_CONFIG_DIR}/config
+load_enviroment_env() {
+    if [[ -d ${ENVIROMENTS_PATH} && -d ${ENVIROMENTS_PATH}/${1:-${CUR_ENV}} ]]; then
+        source ${ENVIROMENTS_PATH}/${1:-${CUR_ENV}}/.env
+        export KUBECONFIG=${ENVIROMENTS_PATH}/${1:-${CUR_ENV}}/${KUBE_CONFIG_DIR}/config
     fi
 }
 
-# 如果有 $1 則設定 CUR_ENV 為 $1，否則將 enviorments 底下第一個資料夾設定為 CUR_ENV
+# 如果有 $1 則設定 CUR_ENV 為 $1，否則將 enviroments 底下第一個資料夾設定為 CUR_ENV
 set_default_env() {
     # 如果 $1 沒有帶入參數
     if [[ -z "$1" ]]; then
-        # 如果有環境存在 則設定 CUR_ENV 為 enviorments 底下第一個資料夾
+        # 如果有環境存在 則設定 CUR_ENV 為 enviroments 底下第一個資料夾
         if [[ $(has_any_env) == "true" ]]; then
-            export CUR_ENV=$(basename $(ls -d ${ENVIORMENTS_PATH}/*/ | head -n 1))
+            export CUR_ENV=$(basename $(ls -d ${ENVIROMENTS_PATH}/*/ | head -n 1))
             echo "CUR_ENV=${CUR_ENV}" > ${KDE_PATH}/current.env
             echo "當前 k8s 環境已變更為: ${CUR_ENV}"
         # 如果沒有任何環境存在，則刪除 current.env
@@ -73,9 +73,9 @@ set_default_env() {
 }
 
 stop_env() {
-    # 如果 enviorments 底下不存在 $1 環境，則退出
+    # 如果 enviroments 底下不存在 $1 環境，則退出
     exit_if_env_not_exist $1
-    load_enviorment_env $1
+    load_enviroment_env $1
     # 如果環境正在運行，則停止
     if [[ $(is_env_running ${ENV_NAME}) == "true" ]]; then
         echo "環境 ${ENV_NAME} 正在運行"
@@ -102,7 +102,7 @@ remove_env() {
     # 強制刪除 k8s 容器
     stop_env ${ENV_NAME} -f
 
-    rm -rf ${ENVIORMENTS_PATH}/${ENV_NAME}
+    rm -rf ${ENVIROMENTS_PATH}/${ENV_NAME}
     echo "環境 ${ENV_NAME} 已刪除"
     set_default_env
     exit 0
@@ -111,7 +111,7 @@ remove_env() {
 init_env() {
     # 設定環境名稱 & 建立環境目錄
     export ENV_NAME=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-    export ENV_PATH=${ENVIORMENTS_PATH}/${ENV_NAME}
+    export ENV_PATH=${ENVIROMENTS_PATH}/${ENV_NAME}
     export ENV_FILE_PATH=${ENV_PATH}/.env
     if [[ -d ${ENV_PATH} ]]; then
         echo "環境 ${ENV_NAME} 相關設定已存在 (${ENV_PATH})"
@@ -225,7 +225,7 @@ exec_bash_in_deploy_env_with_projects() {
     --workdir /projects \
     -e KUBECONFIG=/.kube/config \
     -v ${KUBECONFIG}:/.kube/config \
-    -v ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}:/projects \
+    -v ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}:/projects \
     r82wei/deploy-env:1.0.0 \
     bash
 }
@@ -240,10 +240,10 @@ exec_script_in_container_with_project() {
     --user $UID:$(id -g) \
     --net ${DOCKER_NETWORK} \
     --workdir /${PROJECT_NAME} \
-    --env-file ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env \
+    --env-file ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env \
     -e KUBECONFIG=/.kube/config \
-    -v ${ENVIORMENTS_PATH}/${CUR_ENV}/${KUBE_CONFIG_DIR}/config:/.kube/config \
-    -v ${ENVIORMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}:/${PROJECT_NAME} \
+    -v ${ENVIROMENTS_PATH}/${CUR_ENV}/${KUBE_CONFIG_DIR}/config:/.kube/config \
+    -v ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}:/${PROJECT_NAME} \
     ${DOCKER_IMAGE} \
     bash -c "${SCRIPT}"
 }

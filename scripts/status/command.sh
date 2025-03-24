@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# 查詢 enviorments 底下每個資料夾的 .env ，並且將查出的 K8S_CONTAINER_NAME 存成陣列
-K8S_CONTAINER_NAMES=$(grep -r "K8S_CONTAINER_NAME" ${ENVIORMENTS_PATH}/*/.env | awk -F= '{print $2}')
+# 查詢 enviroments 底下每個資料夾的 .env ，並且將查出的 K8S_CONTAINER_NAME 存成陣列
+K8S_CONTAINER_NAMES=$(grep -r "K8S_CONTAINER_NAME" ${ENVIROMENTS_PATH}/*/.env | awk -F= '{print $2}')
 # echo "${K8S_CONTAINER_NAMES[@]}"
 
 # 構建 docker ps 的 filter 參數
