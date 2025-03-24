@@ -1,23 +1,27 @@
 # Kubernetes Development Environment(KDE)
 
+使用 docker 來快速建立 K8S/K3S 開發環境，透過將本地專案掛載到 Pod 中，來達到快速開發的目的，並且使用 k9s 管理介面在 IDE 的終端機中進行開發測試。
+
 ## 安裝說明
 
 - 環境需求
 
   - docker
 
-- 執行 `install.sh` 安裝
-  - 將 `kde.sh` & `scripts/` 安裝到 `~/.kde` 中
-  - 將 `kde.sh` 設定為 alias `kde` 並且加入 `~/.bash_aliases` 或 `~/.zshrc` 中
+- 安裝 kde
+  - 執行 `install.sh`
   - 執行完 `install.sh` 後需要重啟終端機，才可以使用 `kde` 指令
   ```
   ./install.sh
   ```
-- 執行 `upgrade.sh` 升級
+- 更新 kde 版本
   - 更新 `~/.kde` 的 `kde.sh` & `scripts/`
   ```
   ./upgrade.sh
   ```
+- 移除 kde
+  - 刪除資料夾 `~/.kde`
+  - 刪除 `~/.bash_aliases` 或 `~/.zshrc` 中的 `kde` alias
 
 ## 使用說明
 
@@ -60,17 +64,23 @@
 
 ## 檔案結構說明 - 使用環境
 
+- 每個 `k8s namespace` 就是一個 `project` 專案
+  - `project name` = `k8s namespace`
+- `k8s namespace`(`project name`) 底下的資料夾會自動與同名的 pv 連結，可以用來掛載到 Pod 中
+  - `project name` / `[自訂資料夾名稱]` = `k8s namespace` / `[pv name]`
+
 ```
-|_ enviroments/           (環境變量存放位置)
-  |_ kubeconfig/          (kubeconfig 存放位置)
-  |_ pki/                 (k8s ca 存放位置)
-  |_ namespace/           (k8s namespace，也是 volumes 存放位置)
-    |_ *[namespace | project name]    (k8s namespace ，也是 project name)
-      |_ project.env                      (project 的環境變數)
-      |_ pre-deploy.sh                    (在部署過程中，會使用 project.env 設定的 DEVELOP_IMAGE 來執行的腳本)
-      |_ deploy.sh                        (在部署過程中，會使用 project.env 設定的 DEPLOY_IMAGE 來執行的腳本)
-      |_ *[pv name]/                      (volume 掛載資料夾，建立與資料夾相同名稱的 pv 即可連結)
-|_ current.env            (當前環境相關資訊)
+|_ enviroments/           # k8s 環境存放位置
+  |_ *[env_name]/         # 自訂 k8s 環境名稱
+    |_ kubeconfig/            # kubeconfig 存放位置
+    |_ pki/                   # k8s ca 存放位置
+    |_ namespaces/            # k8s namespace 存放位置，也是 volumes 存放位置，每個 namespace 就是一個專案
+      |_ *[k8s namespace | project name]    # k8s namespace ，也是 project name，底下的資料夾會自動與同名的 pv 連結，可以掛載到 Pod 中
+        |_ project.env                      # project 的環境變數，包含專案的 Git repo url & branch、開發 Container image、部署 Container image
+        |_ pre-deploy.sh                    # 在部署過程中，會使用 project.env 設定的 DEVELOP_IMAGE 來執行的腳本
+        |_ deploy.sh                        # 在部署過程中，會使用 project.env 設定的 DEPLOY_IMAGE 來執行的腳本
+        |_ *[pv name]/                      # volume 掛載資料夾，建立與資料夾相同名稱的 pv 即可連結
+|_ current.env            # 當前使用中的 k8s 環境相關資訊
 ```
 
 ## TODO
