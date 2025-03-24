@@ -6,7 +6,7 @@ if [[ $(is_env_running ${K8S_CONTAINER_NAME}) == "true" ]]; then
     echo "K8S named '${K8S_CONTAINER_NAME}' exists."
 else
     if [[ ! -f "${ENV_PATH}/kind-config.yaml" ]]; then
-        envsubst < ${KDE_SCRIPTS_PATH}/start/kind/kind-config.template.yaml > ${ENV_PATH}/kind-config.yaml
+        envsubst < ${KDE_SCRIPTS_PATH}/start/kind/kind-config.yaml > ${ENV_PATH}/kind-config.yaml
     fi
 
     # Ensure Docker network
