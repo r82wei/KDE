@@ -15,7 +15,7 @@
   ./install.sh
   ```
 - 更新 kde 版本
-  - 更新 `~/.kde` 的 `kde.sh` & `scripts/`
+  - 執行 `upgrade.sh`
   ```
   ./upgrade.sh
   ```
@@ -74,6 +74,9 @@
   |_ *[env_name]/         # 自訂 k8s 環境名稱
     |_ kubeconfig/            # kubeconfig 存放位置
     |_ pki/                   # k8s ca 存放位置
+    |_ .env                   # k8s 環境設定
+    |_ kind-config.yaml       # kind 設定檔
+    |_ k3d-config.yaml        # k3d 設定檔
     |_ namespaces/            # k8s namespace 存放位置，也是 volumes 存放位置，每個 namespace 就是一個專案
       |_ *[k8s namespace | project name]    # k8s namespace ，也是 project name，底下的資料夾會自動與同名的 pv 連結，可以掛載到 Pod 中
         |_ project.env                      # project 的環境變數，包含專案的 Git repo url & branch、開發 Container image、部署 Container image
@@ -90,7 +93,7 @@
 - [x] ls (列出 k8s 環境)
 - [x] start (啟動 k8s 環境)
   - [x] kind (使用 kind 啟動 K8S)
-  - [ ] k3d (使用 k3d 啟動 K8S)
+  - [x] k3d (使用 k3d 啟動 K8S)
 - [x] stop (停止 k8s 環境)
 - [x] restart (重啟 k8s 環境)
 - [x] status (顯示 k8s 環境狀態)

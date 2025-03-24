@@ -18,6 +18,20 @@ is_env_running() {
     fi
 }
 
+get_env_containers() {
+    ENV_NAME=$1
+    ENV_TYPE=$(get_env_type ${ENV_NAME})
+    if [[ "${ENV_TYPE}" == "kind" ]]; then
+        ENV_NAME="${ENV_NAME}-control-plane"
+    elif [[ "${ENV_TYPE}" == "k3d" ]]; then
+        ENV_NAME="k3d-${ENV_NAME}-server"
+    else
+        echo "錯誤的 ENV_TYPE: ${ENV_TYPE}"
+        exit 1
+    fi
+    echo $(docker ps --format "{{.Names}}" --filter name=${ENV_NAME})
+}
+
 has_any_env() {
     if [[ ! -d ${ENVIROMENTS_PATH} || -z $(ls -1 ${ENVIROMENTS_PATH}) ]]; then
         echo "false"
@@ -40,6 +54,12 @@ exit_if_env_not_running() {
     fi
 }
 
+get_env_type() {
+    ENV_NAME=$1
+    load_enviroment_env ${ENV_NAME}
+    echo "${ENV_TYPE}"
+}
+
 load_enviroment_env() {
     if [[ -d ${ENVIROMENTS_PATH} && -d ${ENVIROMENTS_PATH}/${1:-${CUR_ENV}} ]]; then
         source ${ENVIROMENTS_PATH}/${1:-${CUR_ENV}}/.env
@@ -56,6 +76,7 @@ set_default_env() {
             export CUR_ENV=$(basename $(ls -d ${ENVIROMENTS_PATH}/*/ | head -n 1))
             echo "CUR_ENV=${CUR_ENV}" > ${KDE_PATH}/current.env
             echo "當前 k8s 環境已變更為: ${CUR_ENV}"
+            load_enviroment_env ${CUR_ENV}
         # 如果沒有任何環境存在，則刪除 current.env
         else
             rm -f ${KDE_PATH}/current.env
@@ -68,6 +89,7 @@ set_default_env() {
         export CUR_ENV=$1
         echo "CUR_ENV=${CUR_ENV}" > ${KDE_PATH}/current.env
         echo "當前 k8s 環境已變更為: ${CUR_ENV}"
+        load_enviroment_env ${CUR_ENV}
     fi
     
 }
@@ -77,19 +99,18 @@ stop_env() {
     exit_if_env_not_exist $1
     load_enviroment_env $1
     # 如果環境正在運行，則停止
-    if [[ $(is_env_running ${ENV_NAME}) == "true" ]]; then
+    if [[ $(is_env_running ${K8S_CONTAINER_NAME}) == "true" ]]; then
         echo "環境 ${ENV_NAME} 正在運行"
+        ENV_TYPE=$(get_env_type ${ENV_NAME})
+        containers=$(get_env_containers ${ENV_NAME}) 
         if [[ "$2" == "-f" || "$2" == "--force" ]]; then
-            # 強制刪除 k8s 容器
-            echo "強制刪除 k8s 容器 ${K8S_CONTAINER_NAME}"
-            docker rm -f ${K8S_CONTAINER_NAME}
+            echo "強制刪除 k8s 容器: ${containers}"
+            docker rm -f ${containers}
         else
-            # 停止 k8s 容器
-            echo "停止 k8s 容器 ${K8S_CONTAINER_NAME}"
-            docker stop ${K8S_CONTAINER_NAME}
-            # 刪除 k8s 容器
-            echo "刪除 k8s 容器 ${K8S_CONTAINER_NAME}"
-            docker rm ${K8S_CONTAINER_NAME}
+            echo "停止 k8s 容器: ${containers}"
+            docker stop ${containers}
+            echo "刪除 k8s 容器: ${containers}"
+            docker rm ${containers}
         fi
     else
         echo "環境 ${ENV_NAME} 未運行"
@@ -111,6 +132,7 @@ remove_env() {
 init_env() {
     # 設定環境名稱 & 建立環境目錄
     export ENV_NAME=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+    export ENV_TYPE=$2
     export ENV_PATH=${ENVIROMENTS_PATH}/${ENV_NAME}
     export ENV_FILE_PATH=${ENV_PATH}/.env
     if [[ -d ${ENV_PATH} ]]; then
@@ -119,14 +141,18 @@ init_env() {
         echo "環境 ${ENV_NAME} 尚未存在，開始初始化環境..."
         mkdir -p ${ENV_PATH}
         echo "ENV_NAME=${ENV_NAME}" >> ${ENV_PATH}/.env
-        echo "ENV_TYPE=$2" >> ${ENV_PATH}/.env
+        echo "ENV_TYPE=${ENV_TYPE}" >> ${ENV_PATH}/.env
         echo "CUR_ENV=${ENV_NAME}" > ${KDE_PATH}/current.env
         
         # 設定環境變數檔案路徑
         touch ${ENV_FILE_PATH}
 
         # 設定 K8S container 名稱
-        K8S_CONTAINER_NAME=${ENV_NAME}-control-plane
+        if [[ "${ENV_TYPE}" == "kind" ]]; then
+            export K8S_CONTAINER_NAME=${ENV_NAME}-control-plane
+        else
+            export K8S_CONTAINER_NAME=k3d-${ENV_NAME}-serverlb
+        fi
         echo "K8S_CONTAINER_NAME=${K8S_CONTAINER_NAME}" >> ${ENV_FILE_PATH}
 
         # 如果 ca.key 不存在，則生成 ca.key 和 ca.crt
@@ -138,7 +164,7 @@ init_env() {
         fi
 
         # 設定 DOCKER_NETWORK
-        DOCKER_NETWORK="kde-${ENV_NAME}"
+        export DOCKER_NETWORK="kde-${ENV_NAME}"
         echo "DOCKER_NETWORK=${DOCKER_NETWORK}" >> ${ENV_FILE_PATH}
 
         # 輸入 K8S_API_SERVER_PORT
