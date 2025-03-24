@@ -24,7 +24,7 @@ show_exec_help() {
     echo "  kde project exec <project_name> [option]  進入專案相關環境 container"
     echo ""
     echo "option:"
-    echo "  runtime, run        進入專案 RUNTIME_IMAGE 啟動的 container (default)"
+    echo "  develop, dev        進入專案 DEVELOP_IMAGE 啟動的 container (default)"
     echo "  deploy, dep         進入專案 DEPLOY_IMAGE 啟動的 container"
 }
 
@@ -33,24 +33,14 @@ show_fetch_help() {
     echo "  kde project fetch <project_name> <git repo url> <git repo branch>  從 git 直接抓取 KDE 專案"
 }
 
-check_project_name() {
-    if [[ -z "${PROJECT_NAME}" ]]; then
-        read -p "請輸入專案名稱: " PROJECT_NAME
-    fi
-}
-
-
-exit_if_env_not_running ${CUR_ENV}
 
 COMMAND=$1
 PROJECT_NAME=$2
 
-if [[ -z "${COMMAND}" ]]; then
+if [[ -z "${COMMAND}" || "${COMMAND}" == "-h" || "${COMMAND}" == "--help" ]]; then
     show_help
     exit 1
 fi
-
-
 
 case "${COMMAND}" in
     ls|list)
@@ -75,19 +65,23 @@ case "${COMMAND}" in
         fetch_project ${PROJECT_NAME} ${PROJECT_GIT_REPO_URL} ${PROJECT_GIT_REPO_BRANCH}
         ;;
     deploy)
+        exit_if_env_not_running ${CUR_ENV}
         check_project_name
         deploy_project ${PROJECT_NAME}
         ;;
     undeploy)
+        exit_if_env_not_running ${CUR_ENV}
         check_project_name
         undeploy_project ${PROJECT_NAME}
         ;;
     redeploy)
+        exit_if_env_not_running ${CUR_ENV}
         check_project_name
         undeploy_project ${PROJECT_NAME}
         deploy_project ${PROJECT_NAME}
         ;;
     remove|rm)
+        exit_if_env_not_running ${CUR_ENV}
         check_project_name
         remove_project ${PROJECT_NAME}
         ;;
@@ -100,10 +94,11 @@ case "${COMMAND}" in
         fi
         case "${IMAGE_TYPE}" in
             deploy|dep)
+                exit_if_env_not_running ${CUR_ENV}
                 exec_project_deploy_container ${PROJECT_NAME}
                 ;;
-            runtime|run|"")
-                exec_project_runtime_container ${PROJECT_NAME}
+            develop|dev|"")
+                exec_project_develop_container ${PROJECT_NAME}
                 ;;
             *)
                 show_exec_help

@@ -4,14 +4,14 @@
 export KDE_SCRIPTS_PATH=$(dirname "$(realpath "$0")")/scripts
 # 設定 KDE 根目錄路徑
 export KDE_PATH=$PWD
-# 設定環境目錄路徑(enviorments)
-export ENVIORMENTS_PATH=${KDE_PATH}/environments
+# 設定環境目錄路徑(enviroments)
+export ENVIROMENTS_PATH=${KDE_PATH}/environments
 # 設定 KUBE_CONFIG_DIR
 export KUBE_CONFIG_DIR=kubeconfig
 # 設定 VOLUMES_DIR
 export VOLUMES_DIR=namespaces
 
-source ${KDE_SCRIPTS_PATH}/utils/enviorment.sh
+source ${KDE_SCRIPTS_PATH}/utils/enviroment.sh
 
 # 設定當前環境的環境變數
 if [[ -f ${KDE_PATH}/current.env ]]; then
@@ -23,7 +23,7 @@ if [[ $(is_env_exist ${CUR_ENV}) == "false" ]]; then
     # 修改預設環境
     set_default_env
 else
-    load_enviorment_env ${CUR_ENV}
+    load_enviroment_env ${CUR_ENV}
 fi
 
 
@@ -32,27 +32,26 @@ show_help() {
     echo "usage: kde <command>"
     echo ""
     echo "command:"
-    echo "  ls              列出 k8s 環境"
-    echo "  start, create   啟動 k8s 環境"
-    echo "  stop            停止 k8s 環境"
-    echo "  restart         重啟 k8s 環境"
-    echo "  status          顯示 k8s 環境狀態"
-    echo "  remove, rm      移除 k8s 環境"
-    echo "  current         顯示目前 k8s 環境名稱"
-    echo "  k9s             進入 k9s dashboard"
-    echo "  ingress         ingress 相關操作"
-    echo "  mount           掛載目錄到指定的 Pod"
-    echo "  expose          將 service/pod port forward 到本地指定的 port"
-    echo "  exec            進入有部署相關工具的環境"
-    echo "  reset           重置 kde 環境，清除 environments 和 projects 資料夾"
-    echo "  project         project 管理"
+    echo "  list, ls                            列出 k8s 環境"
+    echo "  start, create <env_name> [--k3d]    啟動 k8s 環境 (預設使用 kind，可使用參數 --k3d 啟動 k3d)"
+    echo "  stop [env_name]                     停止 k8s 環境 (預設停止 current.env 的當前使用中的 k8s 環境)"
+    echo "  restart                             重啟 k8s 環境 (預設停止 current.env 的當前使用中的 k8s 環境)"
+    echo "  status                              顯示 k8s 環境狀態"
+    echo "  remove, rm                          移除 k8s 環境"
+    echo "  current, cur                        顯示當前使用中的 k8s 環境名稱"
+    echo "  use [env_name]                      切換當前使用中的 k8s 環境名稱"
+    echo "  k9s [-p port]                       進入 k9s dashboard, 可使用 -p 參數，設定 k9s port-forward 的 port"
+    echo "  expose                              將 service/pod port forward 到本地指定的 port"
+    echo "  exec                                進入有部署相關工具的環境，並且掛載當前環境的 namespace 資料夾"
+    echo "  reset                               重置 kde 環境，清除全部 environments 和 projects 資料夾"
+    echo "  project, proj                       project 管理 (可以使用 kde project -h 查看詳細說明)"
 }
 
 
 # 根據第一個參數來選擇不同的處理流程
 case "$1" in
     ls|list)
-        ls ${ENVIORMENTS_PATH}
+        ls ${ENVIROMENTS_PATH}
         ;;
     start|create)
         shift  # 移除 "start" 指令
@@ -70,14 +69,14 @@ case "$1" in
         shift  # 移除 "status" 指令
         source ${KDE_SCRIPTS_PATH}/status/command.sh
         ;;
-    current)
+    current|cur)
         if [[ -z "${CUR_ENV}" ]]; then
             echo "目前沒有設定任何 k8s 環境"
         else
             echo "當前 k8s 環境名稱: ${CUR_ENV}"
         fi
         ;;
-    default)
+    use)
         shift  # 移除 "status" 指令
         set_default_env $1
         ;;
@@ -89,16 +88,6 @@ case "$1" in
         shift  # 移除 "exec" 指令
         source ${KDE_SCRIPTS_PATH}/exec/command.sh
         ;;
-    ingress)
-        shift  # 移除 "ingress" 指令
-        echo "ingress 相關操作"
-        source ${KDE_SCRIPTS_PATH}/ingress/command.sh
-        ;;
-    mount)
-        shift  # 移除 "mount" 指令
-        echo "掛載目錄到指定的 Pod"
-        source ${KDE_SCRIPTS_PATH}/mount/command.sh
-        ;;
     expose)
         shift  # 移除 "expose" 指令
         source ${KDE_SCRIPTS_PATH}/expose/command.sh
@@ -108,7 +97,7 @@ case "$1" in
         source ${KDE_SCRIPTS_PATH}/k9s/command.sh
         exit 0
         ;;
-    project)
+    project|proj)
         shift  # 移除 "project"  指令
         source ${KDE_SCRIPTS_PATH}/project/command.sh
         ;;

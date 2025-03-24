@@ -12,7 +12,7 @@ if [[ -z "$1" ]]; then
     exit 1
 fi
 
-export ENV_NAME=${1:-${CUR_ENV}}
+export ENV_NAME=$1
 
 # 檢查環境是否存在
 exit_if_env_not_exist ${ENV_NAME}

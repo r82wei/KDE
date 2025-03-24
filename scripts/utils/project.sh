@@ -1,5 +1,11 @@
 #!/bin/bash
 
+check_project_name() {
+    if [[ -z "${PROJECT_NAME}" ]]; then
+        read -p "請輸入專案名稱: " PROJECT_NAME
+    fi
+}
+
 is_project_exist() {
     if [[ ! -d ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/$1 ]]; then
         echo "false"
@@ -41,8 +47,8 @@ create_project() {
     source ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     REPO_PATH=${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL})
     download_git_repo ${PROJECT_NAME} ${GIT_REPO_URL} ${GIT_REPO_BRANCH} ${REPO_PATH}
-    read -p "請輸入專案執行(建置)環境 Image (執行 pre-deploy.sh 的環境): " RUNTIME_IMAGE
-    echo "RUNTIME_IMAGE=${RUNTIME_IMAGE}" >> ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+    read -p "請輸入專案執行(建置)環境 Image (執行 pre-deploy.sh 的環境): " DEVELOP_IMAGE
+    echo "DEVELOP_IMAGE=${DEVELOP_IMAGE}" >> ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     read -p "請輸入專案部署環境 Image (執行 deploy.sh 的環境): " DEPLOY_IMAGE
     echo "DEPLOY_IMAGE=${DEPLOY_IMAGE}" >> ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     init_project_deploy_script ${PROJECT_NAME}
@@ -68,8 +74,6 @@ init_project_deploy_script() {
     chmod +x ${PROJECT_REPO_PATH}/pre-deploy.sh
     touch ${PROJECT_REPO_PATH}/deploy.sh
     chmod +x ${PROJECT_REPO_PATH}/deploy.sh
-    touch ${PROJECT_REPO_PATH}/post-deploy.sh
-    chmod +x ${PROJECT_REPO_PATH}/post-deploy.sh
 }
 
 git_repo_name() {
@@ -120,7 +124,7 @@ deploy_project() {
     echo ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
     source ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     if [[ -f ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/pre-deploy.sh ]]; then
-        exec_script_in_container_with_project ${PROJECT_NAME} ${RUNTIME_IMAGE} ./pre-deploy.sh
+        exec_script_in_container_with_project ${PROJECT_NAME} ${DEVELOP_IMAGE} ./pre-deploy.sh
     fi
     if [[ -f ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/deploy.sh ]]; then
         exec_script_in_container_with_project ${PROJECT_NAME} ${DEPLOY_IMAGE} ./deploy.sh
@@ -145,13 +149,13 @@ remove_project() {
     echo "專案 ${PROJECT_NAME} 已刪除"
 }
 
-exec_project_runtime_container() {
+exec_project_develop_container() {
     PROJECT_NAME=$1
     exit_if_project_not_exist ${PROJECT_NAME}
     source ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     REPO_NAME=$(git_repo_name ${GIT_REPO_URL})
     echo "REPO_NAME: ${REPO_NAME}"
-    exec_script_in_container_with_project ${PROJECT_NAME} ${RUNTIME_IMAGE} "cd ${REPO_NAME} && bash"
+    exec_script_in_container_with_project ${PROJECT_NAME} ${DEVELOP_IMAGE} "cd ${REPO_NAME} && bash"
 }
 
 exec_project_deploy_container() {
