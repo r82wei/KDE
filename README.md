@@ -9,19 +9,20 @@
   - docker
 
 - 安裝 kde
-  - 執行 `install.sh`
-  - 執行完 `install.sh` 後需要重啟終端機，才可以使用 `kde` 指令
+  - 執行 `install.sh` (需要有系統管理員權限)
   ```
-  ./install.sh
-  ```
-- 更新 kde 版本
-  - 執行 `upgrade.sh`
-  ```
-  ./upgrade.sh
+  sudo ./install.sh
   ```
 - 移除 kde
-  - 刪除資料夾 `~/.kde`
-  - 刪除 `~/.bash_aliases` 或 `~/.zshrc` 中的 `kde` alias
+  - 方法 1: 執行 `uninstall.sh` (需要有系統管理員權限)
+    ```
+    sudo ./uninstall.sh
+    ```
+  - 方法 2: 移除 kde softlink 與資料夾 (需要有系統管理員權限)
+    ```
+    sudo rm /usr/local/bin/kde
+    sudo rm -rf /usr/local/lib/kde
+    ```
 
 ## 使用說明
 
