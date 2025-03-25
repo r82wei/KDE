@@ -192,12 +192,6 @@ init_env() {
     source ${ENV_FILE_PATH}
 }
 
-# 安裝 k8s 預設常用的服務
-install_default_services() {
-    script=$(< ${KDE_SCRIPTS_PATH}/start/install-default-services.sh)
-    exec_script_in_deploy_env "${script}"
-}
-
 exec_port_forward() {
     NAMESPACE=$1
     RESOURCE_TYPE=$2

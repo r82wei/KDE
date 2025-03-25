@@ -31,7 +31,8 @@ else
         exit 1
     fi
 
-    install_default_services
+    script=$(< ${KDE_SCRIPTS_PATH}/start/k3d/install-default-services.sh)
+    exec_script_in_deploy_env "${script}"
     echo "K8S 初始化已完成"
 
 fi
