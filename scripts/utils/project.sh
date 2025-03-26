@@ -42,10 +42,18 @@ create_project() {
     PROJECT_NAME=$1
     exit_if_project_exist ${PROJECT_NAME}
     mkdir -p ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
-    set_git_repo ${PROJECT_NAME}
-    source ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
-    REPO_PATH=${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL})
-    download_git_repo ${PROJECT_NAME} ${GIT_REPO_URL} ${GIT_REPO_BRANCH} ${REPO_PATH}
+    read -p "Is this project a git repo? (y/n): " IS_GIT_REPO
+    if [[ ${IS_GIT_REPO} == "y" ]]; then
+        set_git_repo ${PROJECT_NAME}
+        source ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+        REPO_PATH=${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL})
+        download_git_repo ${PROJECT_NAME} ${GIT_REPO_URL} ${GIT_REPO_BRANCH} ${REPO_PATH}
+    else
+        echo "GIT_REPO_URL=${PROJECT_NAME}" >> ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+        echo "GIT_REPO_BRANCH=main" >> ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+        REPO_PATH=${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/${PROJECT_NAME}
+        mkdir -p ${REPO_PATH}
+    fi
     read -p "請輸入專案執行(建置)環境 Image (執行 pre-deploy.sh 的環境): " DEVELOP_IMAGE
     echo "DEVELOP_IMAGE=${DEVELOP_IMAGE}" >> ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     read -p "請輸入專案部署環境 Image (執行 deploy.sh 的環境): " DEPLOY_IMAGE
@@ -144,7 +152,9 @@ undeploy_project() {
 remove_project() {
     PROJECT_NAME=$1
     exit_if_project_not_exist ${PROJECT_NAME}
-    exec_script_in_deploy_env "kubectl delete ns ${PROJECT_NAME}"
+    if [[ $(is_env_running ${CUR_ENV}) == "true" ]]; then
+        undeploy_project ${PROJECT_NAME}
+    fi
     rm -rf ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
     echo "專案 ${PROJECT_NAME} 已刪除"
 }

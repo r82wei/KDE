@@ -81,7 +81,6 @@ case "${COMMAND}" in
         deploy_project ${PROJECT_NAME}
         ;;
     remove|rm)
-        exit_if_env_not_running ${CUR_ENV}
         check_project_name
         remove_project ${PROJECT_NAME}
         ;;
