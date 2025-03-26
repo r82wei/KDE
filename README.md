@@ -67,8 +67,9 @@
 
 - 每個 `k8s namespace` 就是一個 `project` 專案
   - `project name` = `k8s namespace`
-- `k8s namespace`(`project name`) 底下的資料夾會自動與同名的 pv 連結，可以用來掛載到 Pod 中
-  - `project name` / `[自訂資料夾名稱]` = `k8s namespace` / `[pv name]`
+- `*[k8s namespace = project name]` 底下的資料夾會自動與同名的 pv 連結，可以用來掛載到 Pod 中
+  - `project name`/`[自訂資料夾名稱]` = `k8s namespace`/`[pv name]`
+- 在 k8s 的 namespace 中建立 pv 的話，也可以在 `*[k8s namespace = project name]` 資料夾底下找到與 pv 同名的資料夾
 
 ```
 |_ enviroments/           # k8s 環境存放位置
@@ -78,12 +79,12 @@
     |_ .env                   # k8s 環境設定
     |_ kind-config.yaml       # kind 設定檔
     |_ k3d-config.yaml        # k3d 設定檔
-    |_ namespaces/            # k8s namespace 存放位置，也是 volumes 存放位置，每個 namespace 就是一個專案
-      |_ *[k8s namespace | project name]    # k8s namespace ，也是 project name，底下的資料夾會自動與同名的 pv 連結，可以掛載到 Pod 中
+    |_ namespaces/            # project 集合存放位置，底下的每個 project 資料夾就是一個 k8s namespace
+      |_ *[k8s namespace = project name]    # k8s namespace ，也是 project name
         |_ project.env                      # project 的環境變數，包含專案的 Git repo url & branch、開發 Container image、部署 Container image
         |_ pre-deploy.sh                    # 在部署過程中，會使用 project.env 設定的 DEVELOP_IMAGE 來執行的腳本
         |_ deploy.sh                        # 在部署過程中，會使用 project.env 設定的 DEPLOY_IMAGE 來執行的腳本
-        |_ *[pv name]/                      # volume 掛載資料夾，建立與資料夾相同名稱的 pv 即可連結
+        |_ *[pv name]/                      # volume 掛載資料夾，會自動與同名的 pv 連結，可以掛載到 Pod 中
 |_ current.env            # 當前使用中的 k8s 環境相關資訊
 ```
 
@@ -105,8 +106,8 @@
 - [x] exec (進入有部署相關工具的環境，並且掛載當前環境的 namespace 資料夾)
 - [ ] reset (重置環境，刪除所有資料)
 - [ ] project (相當於 namespace)
-  - [x] ls (列出 namespace 資料夾底下的資料夾)
-  - [x] create (將專案資料夾建立到 namespace 資料夾底下，並且建立 namespace)
+  - [x] ls (列出 namespaces 資料夾底下的資料夾)
+  - [x] create (將 project 資料夾建立到 namespaces 資料夾底下，並且在 k8s 中建立 namespace)
   - [x] fetch (透過 git url 抓取專案)
   - [ ] link (建立專案資料夾的 softlink 到 namespace 資料夾底下)
   - [x] deploy (部署專案)
@@ -116,6 +117,9 @@
   - [x] exec (進入專案的 Container 環境)
     - [x] develop (進入專案的開發 Container 環境)
     - [x] deploy (進入專案的部署 Container 環境)
+- [ ] namespaces (project 的集合)
+  - [ ] fetch (透過 git url 抓取 project 集合)
+  - [ ] link (建立 project 集合資料夾的 softlink 成為 namespaces 資料夾)
 
 #### Extra Features
 
