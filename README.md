@@ -116,6 +116,8 @@
   - [x] remove (刪除專案)
   - [x] exec (進入專案的 Container 環境)
     - [x] develop (進入專案的開發 Container 環境)
+      - [ ] --root (需要支援使用系統管理員權限)
+      - [ ] --port (需要支援 bind port)
     - [x] deploy (進入專案的部署 Container 環境)
 - [ ] namespaces (project 的集合)
   - [ ] fetch (透過 git url 抓取 project 集合)
