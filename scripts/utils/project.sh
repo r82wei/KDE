@@ -42,7 +42,6 @@ create_project() {
     PROJECT_NAME=$1
     exit_if_project_exist ${PROJECT_NAME}
     mkdir -p ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
-    create_namespace ${PROJECT_NAME}
     set_git_repo ${PROJECT_NAME}
     source ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     REPO_PATH=${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL})
@@ -59,7 +58,6 @@ fetch_project() {
     PROJECT_NAME=$1
     PROJECT_GIT_REPO_URL=$2
     PROJECT_GIT_REPO_BRANCH=$3
-    create_namespace ${PROJECT_NAME}
     PROJECT_REPO_PATH=${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
     download_git_repo ${PROJECT_NAME} ${PROJECT_GIT_REPO_URL} ${PROJECT_GIT_REPO_BRANCH} ${PROJECT_REPO_PATH}
     exit_if_project_env_not_exist ${PROJECT_NAME}
@@ -121,8 +119,10 @@ create_link() {
 deploy_project() {
     PROJECT_NAME=$1
     exit_if_project_not_exist ${PROJECT_NAME}
-    echo ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}
     source ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+    if [[ $(is_namespace_exist ${PROJECT_NAME}) == "false" ]]; then
+        create_namespace ${PROJECT_NAME}
+    fi
     if [[ -f ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/pre-deploy.sh ]]; then
         exec_script_in_container_with_project ${PROJECT_NAME} ${DEVELOP_IMAGE} ./pre-deploy.sh
     fi
