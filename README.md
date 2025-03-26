@@ -14,11 +14,11 @@
   sudo ./install.sh
   ```
 - 移除 kde
-  - 方法 1: 執行 `uninstall.sh` (需要有系統管理員權限)
+  - 自動移除: 執行 `uninstall.sh` (需要有系統管理員權限)
     ```
     sudo ./uninstall.sh
     ```
-  - 方法 2: 移除 kde softlink 與資料夾 (需要有系統管理員權限)
+  - 手動移除: 移除 kde softlink 與資料夾 (需要有系統管理員權限)
     ```
     sudo rm /usr/local/bin/kde
     sudo rm -rf /usr/local/lib/kde
