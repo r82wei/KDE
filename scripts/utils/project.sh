@@ -101,7 +101,7 @@ set_git_repo() {
     read -p "請輸入 git repo HTTPS URL: " GIT_REPO_URL
     echo "GIT_REPO_URL=${GIT_REPO_URL}" >> ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
     read -p "請輸入分支名稱(default: main): " GIT_REPO_BRANCH
-    echo "GIT_REPO_BRANCH=${GIT_REPO_BRANCH}" >> ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
+    echo "GIT_REPO_BRANCH=${GIT_REPO_BRANCH:-main}" >> ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env
 }
 
 download_git_repo() {
