@@ -45,7 +45,8 @@ show_help() {
     echo "  expose                              將 service/pod port forward 到本地指定的 port"
     echo "  exec                                進入有部署相關工具的環境，並且掛載當前環境的 namespace 資料夾"
     echo "  reset                               重置 kde 環境，清除全部 environments 和 projects 資料夾"
-    echo "  project, proj                       project 管理 (可以使用 kde project -h 查看詳細說明)"
+    echo "  project, proj, namespace, ns        project 管理 (可以使用 kde project -h 查看詳細說明)"
+    echo "  projects, projs                     projects(namespaces) 專案集合管理 (可以使用 kde projects -h 查看詳細說明)"
 }
 
 
@@ -98,9 +99,13 @@ case "$1" in
         source ${KDE_SCRIPTS_PATH}/k9s/command.sh
         exit 0
         ;;
-    project|proj)
+    project|proj|namespace|ns)
         shift  # 移除 "project"  指令
         source ${KDE_SCRIPTS_PATH}/project/command.sh
+        ;;
+    projects|projs)
+        shift  # 移除 "projects"  指令
+        source ${KDE_SCRIPTS_PATH}/projects/command.sh
         ;;
     reset)
         shift  # 移除 "reset" 指令
