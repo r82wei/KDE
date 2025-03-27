@@ -17,7 +17,7 @@ fi
 exit_if_env_not_exist ${1:-${CUR_ENV}}
 
 # 關閉環境
-./kde.sh stop ${1:-${CUR_ENV}} $2
+kde stop ${1:-${CUR_ENV}} $2
 
 # 啟動環境
-./kde.sh start ${1:-${CUR_ENV}}
+kde start ${1:-${CUR_ENV}}
