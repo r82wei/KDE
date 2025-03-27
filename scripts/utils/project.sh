@@ -14,6 +14,14 @@ is_project_exist() {
     fi
 }
 
+is_project_env_exist() {
+    if [[ ! -f ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env ]]; then
+        echo "false"
+    else
+        echo "true"
+    fi
+}
+
 exit_if_project_exist() {
     PROJECT_NAME=$1
     if [[ $(is_project_exist ${PROJECT_NAME}) == "true" ]]; then
@@ -32,7 +40,7 @@ exit_if_project_not_exist() {
 
 exit_if_project_env_not_exist() {
     PROJECT_NAME=$1
-    if [[ ! -f ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env ]]; then
+    if [[ $(is_project_env_exist ${PROJECT_NAME}) == "false" ]]; then
         echo "專案 ${PROJECT_NAME} 設定檔(project.env) 不存在"
         exit 1
     fi
@@ -102,8 +110,13 @@ download_git_repo() {
     GIT_REPO_BRANCH=$3
     REPO_PATH=$4
 
-    if [[ -d ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL}) ]]; then
-        rm -r ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/$(git_repo_name ${GIT_REPO_URL})
+    if [[ -d ${REPO_PATH} ]]; then
+        read -p "${REPO_PATH} 專案已存在，是否要刪除？(y/n): " DELETE_PROJECT
+        if [[ ${DELETE_PROJECT} == "y" ]]; then
+            rm -r ${REPO_PATH}
+        else
+            exit 1
+        fi
     fi
 
     # 下載 git repo

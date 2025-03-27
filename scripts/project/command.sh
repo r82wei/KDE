@@ -5,7 +5,7 @@ source ${KDE_SCRIPTS_PATH}/utils/project.sh
 # 定義顯示說明的函數
 show_help() {
     echo "usage:"
-    echo "  kde project <command> <project_name> [option]  專案相關指令"
+    echo "  kde [project|proj|namespace|ns] <command> <project_name> [option]  專案相關指令"
     echo ""
     echo "option:"
     echo "  list, ls        列出專案"
@@ -21,7 +21,7 @@ show_help() {
 
 show_exec_help() {
     echo "usage:"
-    echo "  kde project exec <project_name> [option]  進入專案相關環境 container"
+    echo "  kde [project|proj|namespace|ns] exec <project_name> [option]  進入專案相關環境 container"
     echo ""
     echo "option:"
     echo "  develop, dev        進入專案 DEVELOP_IMAGE 啟動的 container (default)"
@@ -30,7 +30,7 @@ show_exec_help() {
 
 show_fetch_help() {
     echo "usage:"
-    echo "  kde project fetch <project_name> <git repo url> <git repo branch>  從 git 直接抓取 KDE 專案"
+    echo "  kde [project|proj|namespace|ns] fetch <project_name> <git repo url> <git repo branch>  從 git 直接抓取 KDE 專案"
 }
 
 
