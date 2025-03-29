@@ -162,7 +162,12 @@ init_env() {
             mkdir -p ${ENV_PATH}/pki
             openssl genrsa -out ${ENV_PATH}/pki/ca.key 2048
             openssl req -x509 -new -nodes -key ${ENV_PATH}/pki/ca.key -sha256 -days 3650 -out ${ENV_PATH}/pki/ca.crt \
-                -subj "/C=TW/ST=Taipei/L=Taipei/O=KDE/OU=KDE/CN=${K8S_CONTAINER_NAME}"
+                -subj "/C=TW/ST=Taipei/L=Taipei/O=KDE/OU=KDE/CN=${K8S_CONTAINER_NAME}" \
+                -extensions v3_ca \
+                -config <(cat /etc/ssl/openssl.cnf <(printf "\n[v3_ca]\n\
+                    basicConstraints=CA:TRUE\n\
+                    subjectKeyIdentifier=hash\n\
+                    authorityKeyIdentifier=keyid:always,issuer:always\n"))
         fi
 
         # 設定 DOCKER_NETWORK
