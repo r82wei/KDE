@@ -275,6 +275,11 @@ exec_script_in_container_with_project() {
     bash -c "${SCRIPT}"
 }
 
+# 進入 deploy-env 容器中的 Bash 環境，並且把 Volumes/{PROJECT_NAME} 的資料夾掛載進去 (使用 TTY 模式執行命令)
+exec_k8s_node() {
+    docker exec -it ${K8S_CONTAINER_NAME} bash
+}
+
 create_namespace() {
     NAMESPACE=$1
     exec_script_in_deploy_env "kubectl create namespace ${NAMESPACE}"
