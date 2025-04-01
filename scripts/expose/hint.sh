@@ -1,29 +1,7 @@
 #!/bin/bash
 
-
-FORMAT_SCRIPT='--no-headers -o custom-columns=":metadata.name"'
-
 # 取得 Namespace 名稱
-namespaces=($(get_namespaces))
-
-PS3="請選擇一個 Namespace（輸入編號）："
-select namespace in "${namespaces[@]}" "退出"
-do
-    case $namespace in
-        "退出")
-            echo "退出"
-            exit 0
-            ;;
-        "")
-            echo "無效選擇，請重新輸入。"
-            ;;
-        *)
-            echo "你選擇了 Namespace：$namespace"
-            TARGET_NAMESPACE=$namespace
-            break
-            ;;
-    esac
-done
+select_namespace
 
 # 選擇要 Port forward 的服務類型(Service/Pod)
 while true; do
@@ -32,15 +10,15 @@ while true; do
     echo "2) Pod"
     echo "3) 退出"
 
-    read -p "輸入選項編號: " SERVICE_TYPE
+    read -p "輸入選項編號: " RESOURCE_TYPE
 
-    case "$SERVICE_TYPE" in
+    case "$RESOURCE_TYPE" in
     1)
-        export SERVICE_TYPE=service
+        export RESOURCE_TYPE=service
         break
         ;;
     2)
-        export SERVICE_TYPE=pod
+        export RESOURCE_TYPE=pod
         break
         ;;
     3)
@@ -55,18 +33,17 @@ done
 
 
 # 取得 Service/Pod 名稱並存入陣列
-services=($(get_services ${TARGET_NAMESPACE}))
-# 檢查是否存在
-if [ ${#services[@]} -eq 0 ]; then
-  echo "Namespace: ${TARGET_NAMESPACE} 目前沒有任何 ${SERVICE_TYPE} 存在。"
-  exit 1
+if [[ "${RESOURCE_TYPE}" == "service" ]]; then
+    resources=($(get_services ${TARGET_NAMESPACE}))
+elif [[ "${RESOURCE_TYPE}" == "pod" ]]; then
+    resources=($(get_pods ${TARGET_NAMESPACE}))
 fi
 
 # 顯示選單
-PS3="請選擇服務名稱（輸入編號）："
-select service in "${services[@]}" "退出"
+PS3="請選擇 ${RESOURCE_TYPE} 名稱（輸入編號）："
+select resource in "${resources[@]}" "退出"
 do
-    case $service in
+    case $resource in
         "退出")
             echo "退出"
             exit 0
@@ -75,10 +52,9 @@ do
             echo "無效選擇，請重新輸入。"
             ;;
         *)
-            echo "你選擇了 ${SERVICE_TYPE}: $service"
-            read -p "請輸入服務 port: " TARGET_PORT
+            select_port ${TARGET_NAMESPACE} ${RESOURCE_TYPE} ${resource}
             read -p "請輸入本地 port: " LOCAL_PORT
-            exec_port_forward ${TARGET_NAMESPACE} ${SERVICE_TYPE} ${service} ${TARGET_PORT} ${LOCAL_PORT}
+            exec_port_forward ${TARGET_NAMESPACE} ${RESOURCE_TYPE} ${resource} ${TARGET_PORT} ${LOCAL_PORT}
             break
             ;;
     esac

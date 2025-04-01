@@ -450,6 +450,13 @@ select_service() {
 
     # 顯示 namespace 下所有 service
     services=($(get_services ${TARGET_NAMESPACE}))
+
+    # 檢查是否存在
+    if [ ${#services[@]} -eq 0 ]; then
+        echo "Namespace: ${TARGET_NAMESPACE} 目前沒有任何 service 存在。"
+        exit 1
+    fi
+    
     PS3="請選擇一個 Service（輸入編號）："
     select service in "${services[@]}" "退出"
     do
@@ -475,6 +482,13 @@ select_pod() {
 
     # 顯示 namespace 下所有 pod
     pods=($(get_pods ${TARGET_NAMESPACE}))
+
+    # 檢查是否存在
+    if [ ${#pods[@]} -eq 0 ]; then
+        echo "Namespace: ${TARGET_NAMESPACE} 目前沒有任何 pod 存在。"
+        exit 1
+    fi
+
     PS3="請選擇一個 Pod（輸入編號）："
     select pod in "${pods[@]}" "退出"
     do
@@ -498,11 +512,12 @@ select_pod() {
 select_port() {
     TARGET_NAMESPACE=$1
     TYPE=$2
+    TARGET_RESOURCE=$3
 
     if [[ "${TYPE}" == "pod" ]]; then
-        ports=($(get_pod_ports ${TARGET_NAMESPACE} ${TARGET_POD}))
+        ports=($(get_pod_ports ${TARGET_NAMESPACE} ${TARGET_RESOURCE}))
     elif [[ "${TYPE}" == "service" ]]; then
-        ports=($(get_service_ports ${TARGET_NAMESPACE} ${TARGET_SERVICE}))
+        ports=($(get_service_ports ${TARGET_NAMESPACE} ${TARGET_RESOURCE}))
     else
         echo "錯誤的 TYPE: ${TYPE}"
         exit 1
