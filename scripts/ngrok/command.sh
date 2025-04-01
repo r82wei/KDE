@@ -16,15 +16,18 @@ OPTION=$1
 case "${OPTION}" in
     "")
         exit_if_env_not_exist ${CUR_ENV}
-        ngrok_http ${CUR_ENV}
+        ngrok_http_ingress ${CUR_ENV}
         ;;
-    "daemon" | "-d")
-        exit_if_env_not_exist ${CUR_ENV}
-        ngrok_http_daemon ${CUR_ENV}
+    "service")
+        select_namespace
+        select_service ${TARGET_NAMESPACE}
+        select_port ${TARGET_NAMESPACE} "service"
+        ngrok_http_k8s_service ${CUR_ENV} ${TARGET_NAMESPACE} ${TARGET_SERVICE} ${TARGET_PORT}
         ;;
-    *)
-        echo "不支援的選項: $1"
-        show_help
-        exit 1
+    "pod")
+        select_namespace
+        select_pod ${TARGET_NAMESPACE}
+        select_port ${TARGET_NAMESPACE} "pod"
+        ngrok_http_k8s_pod ${CUR_ENV} ${TARGET_NAMESPACE} ${TARGET_POD} ${TARGET_PORT}
         ;;
 esac
