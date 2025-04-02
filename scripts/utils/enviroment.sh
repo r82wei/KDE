@@ -282,12 +282,11 @@ exec_script_in_container_with_project_and_docker() {
     SCRIPT=$3
     
     docker run --rm -it \
-    --user $UID:$(id -g) \
     --net ${DOCKER_NETWORK} \
     --workdir /${PROJECT_NAME} \
     --env-file ${ENVIROMENTS_PATH}/${CUR_ENV}/${VOLUMES_DIR}/${PROJECT_NAME}/project.env \
     -e KUBECONFIG=/.kube/config \
-    -e DOCKER_CONFIG=/.docker
+    -e DOCKER_CONFIG=/.docker \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v ${HOME}/.docker:/.docker \
     -v ${ENVIROMENTS_PATH}/${CUR_ENV}/${KUBE_CONFIG_DIR}/config:/.kube/config \
