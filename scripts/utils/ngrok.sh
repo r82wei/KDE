@@ -21,11 +21,10 @@ if_ngrok_container_exist() {
 
 ngrok_http_ingress() {
     CUR_ENV=$1
-    CONTAINER_NAME=kde-ngrok-${CUR_ENV}
 
     check_ngrok_token ${CUR_ENV}
     # 啟動 ngrok
-    docker run -it --rm --name ${CONTAINER_NAME} -e NGROK_AUTHTOKEN=${NGROK_TOKEN} --network ${DOCKER_NETWORK} ngrok/ngrok:latest http http://${K8S_CONTAINER_NAME}:30080
+    docker run -it --rm -e NGROK_AUTHTOKEN=${NGROK_TOKEN} --network ${DOCKER_NETWORK} ngrok/ngrok:latest http http://${K8S_CONTAINER_NAME}:30080
 }
 
 ngrok_http_k8s_service() {
@@ -33,14 +32,12 @@ ngrok_http_k8s_service() {
     NAMESPACE=$2
     SERVICE=$3
     PORT=$4
-    CONTAINER_NAME=kde-ngrok-${CUR_ENV}
 
     check_ngrok_token ${CUR_ENV}
     echo "(kubectl -n ${NAMESPACE} port-forward --address 0.0.0.0 svc/${SERVICE} 80:${PORT} &) && ngrok http 80"
 
     # 啟動 ngrok
     docker run -it --rm \
-    --name ${CONTAINER_NAME} \
     --network ${DOCKER_NETWORK} \
     -e NGROK_AUTHTOKEN=${NGROK_TOKEN} \
     -v ${KUBECONFIG}:/root/.kube/config \
@@ -53,12 +50,10 @@ ngrok_http_k8s_pod() {
     NAMESPACE=$2
     POD=$3
     PORT=$4
-    CONTAINER_NAME=kde-ngrok-${CUR_ENV}
 
     check_ngrok_token ${CUR_ENV}
     # 啟動 ngrok
     docker run -it --rm \
-    --name ${CONTAINER_NAME} \
     --network ${DOCKER_NETWORK} \
     -e NGROK_AUTHTOKEN=${NGROK_TOKEN} \
     -v ${KUBECONFIG}:/root/.kube/config \
